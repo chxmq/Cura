@@ -63,35 +63,35 @@ if (figuresDir) {
   app.use('/api/figures', express.static(figuresDir));
 }
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/healthcare_db')
-  .then(async () => {
-    console.log('MongoDB connected successfully');
+const warmUpDatasetAndModel = async () => {
+  try {
+    const { processDataset } = await import('./utils/processDataset.js');
+    const datasetData = processDataset();
+    console.log('Dataset loaded:', {
+      symptoms: Object.keys(datasetData.symptomMappings || {}).length,
+      medicines: Object.keys(datasetData.medicineDatabase || {}).length
+    });
+  } catch (error) {
+    console.warn('Dataset loading warning:', error.message);
+  }
 
-    try {
-      const { processDataset } = await import('./utils/processDataset.js');
-      const datasetData = processDataset();
-      console.log('Dataset loaded:', {
-        symptoms: Object.keys(datasetData.symptomMappings || {}).length,
-        medicines: Object.keys(datasetData.medicineDatabase || {}).length
-      });
-    } catch (error) {
-      console.warn('Dataset loading warning:', error.message);
-    }
+  try {
+    const { warmUpSymptomModel } = await import('./services/symptomMlModelService.js');
+    const start = Date.now();
+    const state = warmUpSymptomModel();
+    console.log(
+      `ML model warmed up: ${state.selectedModelName} (acc=${(state.validationAccuracy * 100).toFixed(2)}%) in ${Date.now() - start}ms`
+    );
+  } catch (error) {
+    console.warn('ML warm-up warning:', error.message);
+  }
+};
 
-    // Train the symptom ML model up-front so the first user request
-    // doesn't pay the k-fold + ANOVA + ROC + correlation matrix cost.
-    try {
-      const { warmUpSymptomModel } = await import('./services/symptomMlModelService.js');
-      const start = Date.now();
-      const state = warmUpSymptomModel();
-      console.log(
-        `ML model warmed up: ${state.selectedModelName} (acc=${(state.validationAccuracy * 100).toFixed(2)}%) in ${Date.now() - start}ms`
-      );
-    } catch (error) {
-      console.warn('ML warm-up warning:', error.message);
-    }
-  })
+warmUpDatasetAndModel();
+
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/healthcare_db';
+mongoose.connect(mongoUri)
+  .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
