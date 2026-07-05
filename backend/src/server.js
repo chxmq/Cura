@@ -15,6 +15,7 @@ import symptomRoutes from './routes/symptomRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import teleconsultationRoutes from './routes/teleconsultationRoutes.js';
+import speechRoutes from './routes/speechRoutes.js';
 
 import errorHandler from './middleware/errorHandler.js';
 
@@ -24,9 +25,20 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5050;
 
-// Middleware
+// Middleware — support comma-separated origins for cloud deploys
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(null, allowedOrigins[0]);
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -40,6 +52,16 @@ if (!existsSync(uploadsDir)) {
 
 // Serve uploaded prescription images
 app.use('/uploads', express.static(uploadsDir));
+
+// Serve publication-quality ML figures (300 DPI PNG)
+const figureCandidates = [
+  path.join(__dirname, '../../docs/figures/png'),
+  path.join(__dirname, '../docs/figures/png')
+];
+const figuresDir = figureCandidates.find((dir) => existsSync(dir));
+if (figuresDir) {
+  app.use('/api/figures', express.static(figuresDir));
+}
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/healthcare_db')
@@ -79,6 +101,7 @@ app.use('/api/symptoms', symptomRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/teleconsultations', teleconsultationRoutes);
+app.use('/api/speech', speechRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

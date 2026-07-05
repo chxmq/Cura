@@ -1,0 +1,70 @@
+{
+  "nav": {
+    "symptoms": "Symptoms",
+    "prescription": "Prescription",
+    "history": "History",
+    "analytics": "Analytics",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "getStarted": "Get started",
+    "greeting": "Hi, {{name}}"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "hi": "हिन्दी",
+    "kn": "ಕನ್ನಡ"
+  },
+  "home": {
+    "tagline": "Health, with care.",
+    "subtitle": "Symptom triage, prescription reading, and AI-guided care — in your language.",
+    "ctaSymptoms": "Check symptoms",
+    "ctaPrescription": "Read prescription",
+    "featureTriage": "Smart symptom triage",
+    "featureTriageDesc": "ML-powered guidance on whether to self-care, consult a doctor, or seek urgent care.",
+    "featurePrescription": "Prescription reader",
+    "featurePrescriptionDesc": "Upload a photo and get plain-language medicine explanations.",
+    "featureAssistant": "Health assistant",
+    "featureAssistantDesc": "Ask questions about symptoms, medicines, and next steps — by text or voice.",
+    "featureMultilingual": "Multilingual support",
+    "featureMultilingualDesc": "Use Cura in English, Hindi, or Kannada — including voice input."
+  },
+  "symptoms": {
+    "title": "Symptom checker",
+    "stepAbout": "About you",
+    "stepSymptoms": "Symptoms",
+    "stepFollowUp": "A few more questions",
+    "stepResult": "Result",
+    "voiceHint": "Tap the mic and describe your symptoms",
+    "voiceListening": "Listening…",
+    "analyze": "Analyze symptoms",
+    "back": "Back",
+    "next": "Next"
+  },
+  "assistant": {
+    "title": "Health assistant",
+    "greeting": "Hi, I'm your health assistant. Ask me about symptoms, medicines, or care guidance.",
+    "placeholder": "Type or speak your question…",
+    "send": "Send",
+    "listening": "Listening…",
+    "speakOn": "Speak replies",
+    "speakOff": "Muted",
+    "voiceInput": "Voice input",
+    "error": "Couldn't get a response."
+  },
+  "analytics": {
+    "title": "Model analytics",
+    "subtitle": "Live evaluation metrics from the symptom-triage ML pipeline",
+    "figures": "Publication figures",
+    "figuresDesc": "High-resolution evaluation charts (300 DPI). Click to enlarge.",
+    "comparison": "Comparison results",
+    "comparisonDesc": "Full KPI suite across every candidate model",
+    "sota": "State-of-the-art comparison",
+    "sotaDesc": "Our model vs published baselines and additional ML algorithms"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Try again"
+  }
+}

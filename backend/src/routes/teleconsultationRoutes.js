@@ -82,7 +82,7 @@ router.post('/appointments', auth, async (req, res, next) => {
 // Body: { query, history?: [{ role: "user"|"assistant", content: string }] }
 router.post('/assistant/respond', auth, async (req, res, next) => {
   try {
-    const { query, history = [] } = req.body;
+    const { query, history = [], language = 'en' } = req.body;
 
     if (!query || typeof query !== 'string') {
       return res.status(400).json({
@@ -93,7 +93,8 @@ router.post('/assistant/respond', auth, async (req, res, next) => {
 
     const response = await getHealthAssistantReply({
       query: query.trim(),
-      history: Array.isArray(history) ? history : []
+      history: Array.isArray(history) ? history : [],
+      language: ['en', 'hi', 'kn'].includes(language) ? language : 'en'
     });
 
     res.json({

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Mic,
   Video,
@@ -13,19 +13,16 @@ import {
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { getHealthAssistantReply, getHeygenAccessToken } from '../services/teleconsultationService.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
+import { useSpeechToText } from '../hooks/useSpeechToText.js';
+import { getTtsLang } from '../i18n/index.js';
 
 const Teleconsultation = () => {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: 'Hi, I\'m your health assistant. Ask me about symptoms, medicines, or care guidance.',
-      sources: []
-    }
-  ]);
+  const { locale, t } = useLanguage();
+  const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [listening, setListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   // Avatar session state
@@ -36,10 +33,17 @@ const Teleconsultation = () => {
   const [avatarSpeaking, setAvatarSpeaking] = useState(false);
   const [avatarAttempted, setAvatarAttempted] = useState(false);
 
-  const recognitionRef = useRef(null);
   const avatarRef = useRef(null);
   const videoRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    setMessages([{
+      role: 'assistant',
+      content: t('assistant.greeting'),
+      sources: []
+    }]);
+  }, [locale, t]);
 
   const chatHistoryForApi = useMemo(
     () => messages
@@ -149,8 +153,7 @@ const Teleconsultation = () => {
     // If the avatar is connected and speaking, don't double-up with browser TTS.
     if (avatarReady) return;
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    utterance.lang = getTtsLang(locale);
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };
@@ -195,60 +198,33 @@ const Teleconsultation = () => {
     setQuery('');
 
     try {
-      const response = await getHealthAssistantReply({ query: trimmed, history: chatHistoryForApi });
-      const answer = response?.answer || 'I couldn\'t generate a response right now.';
+      const response = await getHealthAssistantReply({
+        query: trimmed,
+        history: chatHistoryForApi,
+        language: locale
+      });
+      const answer = response?.answer || t('assistant.error');
       const sources = response?.sources || [];
       setMessages((prev) => [...prev, { role: 'assistant', content: answer, sources }]);
       speakText(answer);
       await speakWithAvatar(answer);
     } catch (err) {
-      setError(err?.response?.data?.error || err?.message || 'Couldn\'t get a response.');
+      setError(err?.response?.data?.error || err?.message || t('assistant.error'));
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setError('Speech recognition isn\'t supported here. Try Chrome or Edge.');
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.onerror = () => setListening(false);
-      recognition.onend = async () => {
-        setListening(false);
-        const transcript = String(recognitionRef.current?.__lastTranscript || '').trim();
-        if (transcript) await sendPrompt(transcript);
-      };
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map((result) => result[0]?.transcript || '')
-          .join(' ')
-          .trim();
-        recognition.__lastTranscript = transcript;
-        setQuery(transcript);
-      };
-      recognitionRef.current = recognition;
-    }
-
-    if (listening) {
-      recognitionRef.current.stop();
-      setListening(false);
-      return;
-    }
-
-    setError('');
-    recognitionRef.current.start();
-    setListening(true);
-  };
-
   const submitQuery = () => sendPrompt(query);
+
+  const { listening, toggleListening } = useSpeechToText({
+    locale,
+    onTranscript: (transcript, meta) => {
+      setQuery(transcript);
+      if (!meta?.interim) sendPrompt(transcript);
+    },
+    onError: (err) => setError(err?.message || t('assistant.error'))
+  });
 
   // -------- Avatar status pill --------
 
@@ -269,7 +245,7 @@ const Teleconsultation = () => {
     <div className="max-w-7xl mx-auto pb-12">
       <div className="text-center mb-8 space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          Teleconsultation
+          {t('assistant.title')}
         </h1>
         <p className="text-[#3e4c5b] max-w-2xl mx-auto">
           A live video session with an AI doctor avatar. Speak naturally — the
@@ -435,7 +411,7 @@ const Teleconsultation = () => {
                 </Button>
                 <Button variant="ghost" onClick={toggleListening} size="sm">
                   <Mic size={14} className={listening ? 'text-[#dc2626]' : ''} />
-                  {listening ? 'Listening…' : 'Voice'}
+                  {listening ? t('assistant.listening') : t('assistant.voiceInput')}
                 </Button>
                 <Button variant="ghost" onClick={() => setVoiceEnabled((v) => !v)} size="sm">
                   <Volume2 size={14} /> {voiceEnabled ? 'Speak: on' : 'Speak: off'}

@@ -27,6 +27,7 @@ import Spotlight from '../components/ui/Spotlight';
 import AnimatedNumber from '../components/ui/AnimatedNumber';
 import ScrollReveal from '../components/ui/ScrollReveal';
 import { useAuth } from '../context/useAuth.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 // ────────────────────────────────────────────────────────────────────
 // Hero mockup cards — three layered floating panels
@@ -226,6 +227,7 @@ const BentoCard = ({ icon: Icon, title, description, accent = 'teal', className 
 // ────────────────────────────────────────────────────────────────────
 const Home = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-16 sm:space-y-24 pb-12">
@@ -247,27 +249,32 @@ const Home = () => {
               </span>
 
               <h1 className="font-display font-semibold tracking-tight text-[#0f1f2e] leading-[1.0]">
-                <span className="block text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]">Health,</span>
                 <span className="block text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
-                  with <span className="text-gradient">care.</span>
+                  {t('home.tagline').split(',')[0]},
+                </span>
+                <span className="block text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+                  {t('home.tagline').includes('care') ? (
+                    <>with <span className="text-gradient">care.</span></>
+                  ) : (
+                    <span className="text-gradient">{t('home.tagline').split(',').slice(1).join(',').trim()}</span>
+                  )}
                 </span>
               </h1>
 
               <p className="text-lg sm:text-xl text-[#3e4c5b] max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Decode prescriptions you can't read. Understand symptoms that won't go away. Talk
-                to an AI doctor. All in one calm, honest place.
+                {t('home.subtitle')}
               </p>
 
               <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 pt-2">
                 <Link to={user ? '/symptoms' : '/register'}>
                   <Button size="lg" className="min-w-[210px] group">
-                    {user ? 'Check my symptoms' : 'Start with Cura — free'}
+                    {user ? t('home.ctaSymptoms') : t('nav.getStarted')}
                     <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
                   </Button>
                 </Link>
                 <Link to={user ? '/prescription' : '/register'}>
                   <Button size="lg" variant="secondary" className="min-w-[210px]">
-                    Read a prescription
+                    {t('home.ctaPrescription')}
                   </Button>
                 </Link>
               </div>
@@ -434,8 +441,8 @@ const Home = () => {
           <ScrollReveal delay={330}>
             <BentoCard
               icon={Mic}
-              title="Hands-free input"
-              description="Speak your symptoms. The Web Speech API parses them, we match to our 9 tracked categories."
+              title={t('home.featureMultilingual')}
+              description={t('home.featureMultilingualDesc')}
               accent="amber"
             />
           </ScrollReveal>
@@ -466,7 +473,7 @@ const Home = () => {
                 {
                   icon: Activity,
                   title: 'How we do it',
-                  body: 'Naive Bayes / KNN trained on a 3,880-row labelled dataset. Gemini 2.5 Flash for vision and language. LangChain RAG for the assistant.'
+                  body: 'Naive Bayes, KNN, Decision Tree, Logistic Regression, and Random Forest trained on a 3,880-row labelled dataset. Gemini 2.5 Flash for vision, language, and cloud speech-to-text. LangChain RAG for the assistant.'
                 },
                 {
                   icon: Lock,

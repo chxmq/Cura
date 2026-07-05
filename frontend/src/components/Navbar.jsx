@@ -2,22 +2,22 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '../context/useAuth.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
+import LanguageSwitcher from './LanguageSwitcher';
 import Button from './ui/Button';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Only the two primary entry points + utility pages.
-  // Recommendations / Care nearby / Health Assistant are reached
-  // automatically from inside the flows, not from the top nav.
   const navLinks = user
     ? [
-        { path: '/symptoms', label: 'Symptoms' },
-        { path: '/prescription', label: 'Prescription' },
-        { path: '/history', label: 'History' },
-        { path: '/analytics', label: 'Analytics' }
+        { path: '/symptoms', label: t('nav.symptoms') },
+        { path: '/prescription', label: t('nav.prescription') },
+        { path: '/history', label: t('nav.history') },
+        { path: '/analytics', label: t('nav.analytics') }
       ]
     : [];
 
@@ -54,22 +54,23 @@ const Navbar = () => {
 
           {/* Auth controls (desktop) */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             {user ? (
               <>
                 <span className="text-sm font-medium text-[#3e4c5b]">
-                  Hi, {user.name?.split(' ')[0] || 'there'}
+                  {t('nav.greeting', { name: user.name?.split(' ')[0] || 'there' })}
                 </span>
                 <Button variant="secondary" size="sm" onClick={logout}>
-                  Sign out
+                  {t('nav.signOut')}
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">Sign in</Button>
+                  <Button variant="ghost" size="sm">{t('nav.signIn')}</Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="primary" size="sm">Get started</Button>
+                  <Button variant="primary" size="sm">{t('nav.getStarted')}</Button>
                 </Link>
               </>
             )}
@@ -105,21 +106,22 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="pt-3 mt-3 border-t border-[#e6e2d6] flex flex-col gap-2">
+              <LanguageSwitcher className="px-2 pb-2" />
               {user ? (
                 <Button
                   variant="secondary"
                   onClick={() => { logout(); closeMobile(); }}
                   className="w-full"
                 >
-                  Sign out
+                  {t('nav.signOut')}
                 </Button>
               ) : (
                 <>
                   <Link to="/login" onClick={closeMobile}>
-                    <Button variant="ghost" className="w-full">Sign in</Button>
+                    <Button variant="ghost" className="w-full">{t('nav.signIn')}</Button>
                   </Link>
                   <Link to="/register" onClick={closeMobile}>
-                    <Button variant="primary" className="w-full">Get started</Button>
+                    <Button variant="primary" className="w-full">{t('nav.getStarted')}</Button>
                   </Link>
                 </>
               )}

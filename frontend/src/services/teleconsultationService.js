@@ -15,10 +15,11 @@ export const createTeleconsultationAppointment = async ({
   return response.data;
 };
 
-export const getHealthAssistantReply = async ({ query, history = [] }) => {
+export const getHealthAssistantReply = async ({ query, history = [], language = 'en' }) => {
   const response = await api.post('/teleconsultations/assistant/respond', {
     query,
-    history
+    history,
+    language
   });
   return response.data?.data;
 };

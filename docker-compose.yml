@@ -1,0 +1,48 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    environment:
+      PORT: 5050
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/healthcare_db
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?Set GEMINI_API_KEY in .env}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      LIVEAVATAR_API_KEY: ${LIVEAVATAR_API_KEY:-}
+      LIVEAVATAR_AVATAR_ID: ${LIVEAVATAR_AVATAR_ID:-}
+    volumes:
+      - ./datasets:/app/datasets:ro
+      - ./docs/figures:/app/docs/figures:ro
+      - backend_uploads:/app/uploads
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+  backend_uploads:

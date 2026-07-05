@@ -88,11 +88,17 @@ const formatHistory = (history = []) => history
   .map((entry) => `${entry.role === 'assistant' ? 'Assistant' : 'User'}: ${entry.content}`)
   .join('\n');
 
-export const getHealthAssistantReply = async ({ query, history = [] }) => {
+export const getHealthAssistantReply = async ({ query, history = [], language = 'en' }) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not set. Add it to backend .env.');
   }
+
+  const languageInstructions = {
+    en: 'Respond in clear, simple English.',
+    hi: 'उत्तर स्पष्ट, सरल हिंदी में दें।',
+    kn: 'ಉತ್ತರವನ್ನು ಸ್ಪಷ್ಟ, ಸರಳ ಕನ್ನಡದಲ್ಲಿ ನೀಡಿ.'
+  };
 
   const retrievalIndex = await getRetrievalIndex();
   const ranked = retrievalIndex.chunks
@@ -113,6 +119,7 @@ export const getHealthAssistantReply = async ({ query, history = [] }) => {
   const prompt = `You are a medical health assistant powered by a RAG pipeline.
 Use the "Retrieved context" to answer factually. If context is insufficient, say so clearly and give safe next steps.
 Never claim to be a licensed doctor. Keep responses concise and practical.
+${languageInstructions[language] || languageInstructions.en}
 
 Conversation history:
 ${formatHistory(history)}

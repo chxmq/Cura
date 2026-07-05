@@ -3,6 +3,8 @@ import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import { getSymptomModelMetrics } from '../services/symptomService.js';
+import FigureGallery from '../components/FigureGallery.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 const formatPct = (value) => `${(Number(value || 0) * 100).toFixed(2)}%`;
 const clamp01 = (n) => Math.max(0, Math.min(1, Number(n || 0)));
@@ -18,7 +20,15 @@ const fmtP = (value) => {
   return n < 0.0001 ? n.toExponential(2) : n.toFixed(4);
 };
 const prettyModel = (name) =>
-  ({ naive_bayes: 'Naive Bayes', knn_3: 'KNN (k=3)', knn_5: 'KNN (k=5)', knn_7: 'KNN (k=7)' }[name] || name);
+  ({
+    naive_bayes: 'Naive Bayes',
+    knn_3: 'KNN (k=3)',
+    knn_5: 'KNN (k=5)',
+    knn_7: 'KNN (k=7)',
+    decision_tree: 'Decision Tree',
+    logistic_regression: 'Logistic Regression',
+    random_forest: 'Random Forest'
+  }[name] || name);
 
 const HeatmapGrid = ({ xLabels, yLabels, values }) => (
   <div className="w-full">
@@ -384,6 +394,7 @@ const SimpleTable = ({ columns, rows }) => (
 );
 
 const ModelAnalytics = () => {
+  const { t } = useLanguage();
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -461,10 +472,10 @@ const ModelAnalytics = () => {
     <div className="max-w-7xl mx-auto pb-12 space-y-6">
       <div className="text-center mb-4 space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          Model analytics
+          {t('analytics.title')}
         </h1>
         <p className="text-[#3e4c5b] max-w-2xl mx-auto">
-          Real evaluation metrics from the trained Naive Bayes / KNN models running in production.
+          {t('analytics.subtitle')}
         </p>
       </div>
 
@@ -488,6 +499,13 @@ const ModelAnalytics = () => {
               value={Number(metrics.hypothesisTesting?.anova?.pValue || 0).toExponential(2)}
             />
           </div>
+
+          <Card>
+            <FigureGallery
+              title={t('analytics.figures')}
+              description={t('analytics.figuresDesc')}
+            />
+          </Card>
 
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
@@ -591,9 +609,9 @@ const ModelAnalytics = () => {
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">
-              Comparison results
+              {t('analytics.comparison')}
             </h2>
-            <p className="text-xs text-[#7b8593] mb-4">Full KPI suite across every candidate model (selected model highlighted)</p>
+            <p className="text-xs text-[#7b8593] mb-4">{t('analytics.comparisonDesc')}</p>
             <SimpleTable
               columns={[
                 { key: 'model', label: 'Model' },
@@ -769,9 +787,9 @@ const ModelAnalytics = () => {
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">
-              State-of-the-art comparison
+              {t('analytics.sota')}
             </h2>
-            <p className="text-xs text-[#7b8593] mb-4">{metrics.stateOfTheArtComparison?.description}</p>
+            <p className="text-xs text-[#7b8593] mb-4">{t('analytics.sotaDesc')}</p>
             <SimpleTable
               columns={[
                 { key: 'model', label: 'Model' },
@@ -779,6 +797,9 @@ const ModelAnalytics = () => {
                 { key: 'year', label: 'Year', align: 'right' },
                 { key: 'acc', label: 'Accuracy', align: 'right' },
                 { key: 'f1', label: 'F1', align: 'right' },
+                { key: 'bal', label: 'BalAcc', align: 'right' },
+                { key: 'mcc', label: 'MCC', align: 'right' },
+                { key: 'auc', label: 'AUC', align: 'right' },
                 { key: 'ref', label: 'Reference' }
               ]}
               rows={[
@@ -789,14 +810,31 @@ const ModelAnalytics = () => {
                   year: metrics.stateOfTheArtComparison?.ours?.year,
                   acc: formatPct(metrics.stateOfTheArtComparison?.ours?.accuracy),
                   f1: fmt(metrics.stateOfTheArtComparison?.ours?.f1Score, 3),
-                  ref: 'This work'
+                  bal: '—',
+                  mcc: '—',
+                  auc: '—',
+                  ref: 'Selected model'
                 },
+                ...(metrics.stateOfTheArtComparison?.trainedOnDataset || []).map((b) => ({
+                  model: prettyModel(b.model),
+                  arch: b.architecture,
+                  year: b.year,
+                  acc: formatPct(b.accuracy),
+                  f1: fmt(b.f1Score, 3),
+                  bal: fmt(b.balancedAccuracy, 3),
+                  mcc: fmt(b.mcc, 3),
+                  auc: fmt(b.macroAuc, 3),
+                  ref: b.reference
+                })),
                 ...(metrics.stateOfTheArtComparison?.baselines || []).map((b) => ({
                   model: b.model,
                   arch: b.architecture,
                   year: b.year,
                   acc: formatPct(b.accuracy),
                   f1: fmt(b.f1Score, 3),
+                  bal: '—',
+                  mcc: '—',
+                  auc: '—',
                   ref: b.reference
                 }))
               ]}

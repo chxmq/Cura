@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Mic, MicOff, Check, ArrowRight, ArrowLeft, RefreshCw, Stethoscope, MapPin, Sparkles, AlertTriangle } from 'lucide-react';
 import { analyzeSymptoms } from '../services/symptomService.js';
 import { SYMPTOMS_LIST } from '../utils/constants.js';
+import { matchSymptomsFromText } from '../utils/symptomAliases.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
+import { getSpeechLang } from '../i18n/index.js';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -15,10 +18,10 @@ import {
 } from '../services/voiceService.js';
 
 const STEPS = [
-  { id: 1, label: 'About you' },
-  { id: 2, label: 'Symptoms' },
-  { id: 3, label: 'A few more questions' },
-  { id: 4, label: 'Result' }
+  { id: 1, labelKey: 'symptoms.stepAbout' },
+  { id: 2, labelKey: 'symptoms.stepSymptoms' },
+  { id: 3, labelKey: 'symptoms.stepFollowUp' },
+  { id: 4, labelKey: 'symptoms.stepResult' }
 ];
 
 const FOLLOW_UP_QUESTIONS = [
@@ -27,18 +30,6 @@ const FOLLOW_UP_QUESTIONS = [
   { key: 'durationMoreThan3Days', label: 'Have symptoms lasted more than 3 days?' },
   { key: 'takenOtherMedicine', label: 'Have you taken any other medication recently?' }
 ];
-
-const SYMPTOM_ALIASES = {
-  Fever: ['fever', 'temperature', 'high temp'],
-  'Common Cold': ['cold', 'runny nose', 'blocked nose', 'sneezing'],
-  Cough: ['cough', 'coughing', 'dry cough', 'wet cough'],
-  'Body Pain': ['body pain', 'body ache', 'muscle pain', 'joint pain'],
-  Headache: ['headache', 'head ache', 'migraine', 'head pain'],
-  'Menstrual Cramps': ['period pain', 'menstrual cramps', 'menstrual pain', 'cramps'],
-  Sprain: ['sprain', 'twisted ankle', 'ligament pain'],
-  Indigestion: ['indigestion', 'acidity', 'gas', 'bloating', 'stomach upset'],
-  Toothache: ['toothache', 'tooth pain', 'dental pain']
-};
 
 const severityStyles = {
   Mild: {
@@ -56,6 +47,7 @@ const severityStyles = {
 };
 
 const SymptomChecker = () => {
+  const { locale, t } = useLanguage();
   const [step, setStep] = useState(1);
   const [personalData, setPersonalData] = useState({ age: '', sex: 'Male', weight: '' });
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
@@ -166,21 +158,7 @@ const SymptomChecker = () => {
   }, []);
 
   const applySymptomsFromText = (text) => {
-    const normalized = String(text || '').toLowerCase().replace(/[^a-z\s]/g, ' ');
-    if (!normalized) return;
-
-    const tokenSet = new Set(normalized.split(/\s+/).filter(Boolean));
-    const matchedSymptoms = SYMPTOMS_LIST.filter((symptom) => {
-      const aliases = SYMPTOM_ALIASES[symptom] || [symptom.toLowerCase()];
-      return aliases.some((alias) => {
-        const key = alias.toLowerCase();
-        if (key.includes(' ')) {
-          return normalized.includes(key);
-        }
-        return tokenSet.has(key);
-      });
-    });
-
+    const matchedSymptoms = matchSymptomsFromText(text, locale);
     if (matchedSymptoms.length > 0) {
       setSelectedSymptoms((prev) => {
         const merged = new Set(prev);
@@ -216,6 +194,7 @@ const SymptomChecker = () => {
 
     try {
       recognitionRef.current = startSpeechRecognition({
+        lang: getSpeechLang(locale),
         onStart: () => setIsListening(true),
         onResult: (transcript) => {
           setVoiceInput(transcript);
@@ -249,7 +228,7 @@ const SymptomChecker = () => {
       {/* Header */}
       <div className="mb-10 text-center space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          How are you feeling today?
+          {t('symptoms.title')}
         </h1>
         <p className="text-[#3e4c5b]">
           Walk through four quick steps. We'll classify the severity and suggest next steps.
@@ -261,7 +240,7 @@ const SymptomChecker = () => {
         <div className="flex items-center justify-between mb-3 text-xs font-medium text-[#7b8593]">
           {STEPS.map((s) => (
             <span key={s.id} className={s.id <= step ? 'text-[#0f766e]' : ''}>
-              {s.id}. {s.label}
+              {s.id}. {t(s.labelKey)}
             </span>
           ))}
         </div>

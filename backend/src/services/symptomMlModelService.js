@@ -178,6 +178,246 @@ const predictKnn = (model, features) => {
   };
 };
 
+// ── Decision Tree (categorical, information-gain splits) ──
+
+const labelEntropy = (subset) => {
+  if (!subset.length) return 0;
+  const counts = new Map();
+  subset.forEach((s) => counts.set(s.label, (counts.get(s.label) || 0) + 1));
+  let entropy = 0;
+  counts.forEach((count) => {
+    const p = count / subset.length;
+    entropy -= p * Math.log2(p);
+  });
+  return entropy;
+};
+
+const majorityLabel = (subset) => {
+  const counts = new Map();
+  subset.forEach((s) => counts.set(s.label, (counts.get(s.label) || 0) + 1));
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+};
+
+const buildDecisionTree = (subset, depth, maxDepth) => {
+  const counts = new Map(CLASS_LABELS.map((l) => [l, 0]));
+  subset.forEach((s) => counts.set(s.label, (counts.get(s.label) || 0) + 1));
+  const majority = majorityLabel(subset);
+
+  if (depth >= maxDepth || subset.length < 4 || labelEntropy(subset) === 0) {
+    return { leaf: true, label: majority, counts };
+  }
+
+  const parentEntropy = labelEntropy(subset);
+  const featureCount = subset[0]?.features?.length || 0;
+  let bestGain = 0;
+  let bestFeature = -1;
+  let bestValue = null;
+
+  for (let f = 0; f < featureCount; f += 1) {
+    const values = new Set(subset.map((s) => s.features[f]));
+    for (const value of values) {
+      const left = subset.filter((s) => s.features[f] === value);
+      const right = subset.filter((s) => s.features[f] !== value);
+      if (!left.length || !right.length) continue;
+      const gain = parentEntropy
+        - (left.length / subset.length) * labelEntropy(left)
+        - (right.length / subset.length) * labelEntropy(right);
+      if (gain > bestGain) {
+        bestGain = gain;
+        bestFeature = f;
+        bestValue = value;
+      }
+    }
+  }
+
+  if (bestFeature === -1 || bestGain <= 0) {
+    return { leaf: true, label: majority, counts };
+  }
+
+  return {
+    leaf: false,
+    featureIndex: bestFeature,
+    value: bestValue,
+    left: buildDecisionTree(subset.filter((s) => s.features[bestFeature] === bestValue), depth + 1, maxDepth),
+    right: buildDecisionTree(subset.filter((s) => s.features[bestFeature] !== bestValue), depth + 1, maxDepth)
+  };
+};
+
+const trainDecisionTree = (samples, maxDepth = 10) => ({
+  kind: 'decision_tree',
+  tree: buildDecisionTree(samples, 0, maxDepth)
+});
+
+const walkDecisionTree = (node, features) => {
+  let current = node;
+  while (!current.leaf) {
+    current = features[current.featureIndex] === current.value ? current.left : current.right;
+  }
+  return current;
+};
+
+const predictDecisionTree = (model, features) => {
+  const leaf = walkDecisionTree(model.tree, features);
+  const total = CLASS_LABELS.reduce((sum, l) => sum + (leaf.counts.get(l) || 0), 0) || 1;
+  const probabilities = CLASS_LABELS.map((label) => ({
+    label,
+    probability: (leaf.counts.get(label) || 0) / total
+  })).sort((a, b) => b.probability - a.probability);
+  return {
+    label: leaf.label,
+    confidence: probabilities[0].probability,
+    probabilities
+  };
+};
+
+// ── Logistic Regression (one-hot categorical + softmax) ──
+
+const buildFeatureEncoder = (samples) => {
+  const valueSets = samples[0].features.map(() => new Set());
+  samples.forEach((s) => {
+    s.features.forEach((v, i) => valueSets[i].add(v));
+  });
+  const vocab = valueSets.map((set) => Array.from(set));
+  const offsets = [];
+  let offset = 0;
+  vocab.forEach((values) => {
+    offsets.push(offset);
+    offset += values.length;
+  });
+  return { vocab, offsets, dim: offset };
+};
+
+const encodeSample = (encoder, features) => {
+  const vec = new Array(encoder.dim).fill(0);
+  features.forEach((value, i) => {
+    const idx = encoder.vocab[i].indexOf(value);
+    if (idx >= 0) vec[encoder.offsets[i] + idx] = 1;
+  });
+  return vec;
+};
+
+const softmax = (scores) => {
+  const max = Math.max(...scores);
+  const exps = scores.map((s) => Math.exp(s - max));
+  const sum = exps.reduce((a, b) => a + b, 0);
+  return exps.map((e) => e / sum);
+};
+
+const trainLogisticRegression = (samples, epochs = 80, lr = 0.15) => {
+  const encoder = buildFeatureEncoder(samples);
+  const numClasses = CLASS_LABELS.length;
+  const weights = Array.from({ length: numClasses }, () =>
+    new Array(encoder.dim + 1).fill(0));
+
+  const trainBatch = () => {
+    samples.forEach((sample) => {
+      const x = encodeSample(encoder, sample.features);
+      const logits = weights.map((w) => {
+        let score = w[encoder.dim];
+        for (let i = 0; i < encoder.dim; i += 1) score += w[i] * x[i];
+        return score;
+      });
+      const probs = softmax(logits);
+      const yIdx = CLASS_LABELS.indexOf(sample.label);
+      weights.forEach((w, c) => {
+        const err = probs[c] - (c === yIdx ? 1 : 0);
+        for (let i = 0; i < encoder.dim; i += 1) w[i] -= lr * err * x[i];
+        w[encoder.dim] -= lr * err;
+      });
+    });
+  };
+
+  for (let e = 0; e < epochs; e += 1) trainBatch();
+
+  return { kind: 'logistic_regression', encoder, weights };
+};
+
+const predictLogisticRegression = (model, features) => {
+  const x = encodeSample(model.encoder, features);
+  const logits = model.weights.map((w) => {
+    let score = w[model.encoder.dim];
+    for (let i = 0; i < model.encoder.dim; i += 1) score += w[i] * x[i];
+    return score;
+  });
+  const probs = softmax(logits);
+  const probabilities = CLASS_LABELS.map((label, i) => ({
+    label,
+    probability: probs[i]
+  })).sort((a, b) => b.probability - a.probability);
+  return {
+    label: probabilities[0].label,
+    confidence: probabilities[0].probability,
+    probabilities
+  };
+};
+
+// ── Random Forest (bootstrap + shallow decision trees) ──
+
+const trainRandomForest = (samples, treeCount = 12, maxDepth = 7) => {
+  const trees = [];
+  for (let t = 0; t < treeCount; t += 1) {
+    const indices = seededShuffle(
+      Array.from({ length: samples.length }, (_, i) => i),
+      4000 + t
+    );
+    const bootSample = indices.map((idx) => samples[idx % samples.length]);
+    trees.push(buildDecisionTree(bootSample, 0, maxDepth));
+  }
+  return { kind: 'random_forest', trees };
+};
+
+const predictRandomForest = (model, features) => {
+  const votes = new Map(CLASS_LABELS.map((l) => [l, 0]));
+  model.trees.forEach((tree) => {
+    const leaf = walkDecisionTree(tree, features);
+    votes.set(leaf.label, (votes.get(leaf.label) || 0) + 1);
+  });
+  const total = model.trees.length;
+  const probabilities = CLASS_LABELS.map((label) => ({
+    label,
+    probability: (votes.get(label) || 0) / total
+  })).sort((a, b) => b.probability - a.probability);
+  return {
+    label: probabilities[0].label,
+    confidence: probabilities[0].probability,
+    probabilities
+  };
+};
+
+const getModelDefs = () => [
+  { name: 'naive_bayes', train: trainNaiveBayes, predict: predictNaiveBayes },
+  { name: 'knn_3', train: (s) => trainKnn(s, 3), predict: predictKnn },
+  { name: 'knn_5', train: (s) => trainKnn(s, 5), predict: predictKnn },
+  { name: 'knn_7', train: (s) => trainKnn(s, 7), predict: predictKnn },
+  { name: 'decision_tree', train: trainDecisionTree, predict: predictDecisionTree },
+  { name: 'logistic_regression', train: trainLogisticRegression, predict: predictLogisticRegression },
+  { name: 'random_forest', train: trainRandomForest, predict: predictRandomForest }
+];
+
+const getModelDefsMap = () => {
+  const map = {};
+  getModelDefs().forEach((def) => { map[def.name] = def; });
+  return map;
+};
+
+const complexityScoreForModel = (name) => {
+  if (name.startsWith('knn')) return 3;
+  if (name === 'random_forest') return 5;
+  if (name === 'decision_tree') return 2;
+  if (name === 'logistic_regression') return 4;
+  return 1;
+};
+
+const architectureForModel = (name) => ({
+  naive_bayes: 'Multinomial Naive Bayes (probabilistic)',
+  knn_3: 'k-Nearest Neighbours (k=3)',
+  knn_5: 'k-Nearest Neighbours (k=5)',
+  knn_7: 'k-Nearest Neighbours (k=7)',
+  decision_tree: 'Categorical Decision Tree (information gain)',
+  logistic_regression: 'Multinomial Logistic Regression (one-hot)',
+  random_forest: 'Random Forest (12 trees, bootstrap)'
+}[name] || name);
+
 const buildConfusionMatrix = (labels, predictions) => {
   const indexByLabel = new Map(labels.map((label, idx) => [label, idx]));
   const matrix = labels.map(() => labels.map(() => 0));
@@ -564,12 +804,7 @@ const makeStratifiedFolds = (samples, k, seed = 7) => {
 
 const runStratifiedKFold = (samples, labels, foldCount = 10) => {
   const folds = makeStratifiedFolds(samples, foldCount);
-  const modelDefs = [
-    { name: 'naive_bayes', train: trainNaiveBayes, predict: predictNaiveBayes },
-    { name: 'knn_3', train: (s) => trainKnn(s, 3), predict: predictKnn },
-    { name: 'knn_5', train: (s) => trainKnn(s, 5), predict: predictKnn },
-    { name: 'knn_7', train: (s) => trainKnn(s, 7), predict: predictKnn }
-  ];
+  const modelDefs = getModelDefs();
   const foldResults = {};
   modelDefs.forEach((m) => { foldResults[m.name] = []; });
 
@@ -804,12 +1039,7 @@ const evaluateModelDetailed = (name, trainFn, predictFn, trainSamples, testSampl
 const runKFoldAccuracies = (samples, labels, foldCount = 5) => {
   const shuffled = seededShuffle(samples, 909);
   const foldSize = Math.floor(shuffled.length / foldCount);
-  const modelDefs = [
-    { name: 'naive_bayes', train: trainNaiveBayes, predict: predictNaiveBayes },
-    { name: 'knn_3', train: (s) => trainKnn(s, 3), predict: predictKnn },
-    { name: 'knn_5', train: (s) => trainKnn(s, 5), predict: predictKnn },
-    { name: 'knn_7', train: (s) => trainKnn(s, 7), predict: predictKnn }
-  ];
+  const modelDefs = getModelDefs();
 
   const foldResults = {};
   modelDefs.forEach((m) => { foldResults[m.name] = []; });
@@ -1044,12 +1274,7 @@ const loadAndTrain = () => {
   // Keep the train/predict function references keyed by name so downstream
   // analytics (learning curve, LOOCV, stratified CV) can re-train the exact
   // same model configuration.
-  const MODEL_DEFS = {
-    naive_bayes: { train: trainNaiveBayes, predict: predictNaiveBayes },
-    knn_3: { train: (s) => trainKnn(s, 3), predict: predictKnn },
-    knn_5: { train: (s) => trainKnn(s, 5), predict: predictKnn },
-    knn_7: { train: (s) => trainKnn(s, 7), predict: predictKnn }
-  };
+  const MODEL_DEFS = getModelDefsMap();
 
   const modelEvaluations = Object.entries(MODEL_DEFS).map(([name, def]) =>
     evaluateModelDetailed(name, def.train, def.predict, trainSamples, testSamples, CLASS_LABELS));
@@ -1301,7 +1526,7 @@ export const getSymptomModelMetrics = () => {
   const tradeOff = comparativeStats.map((m) => ({
     model: m.model,
     accuracy: m.accuracy,
-    complexityScore: m.model.startsWith('knn') ? 3 : 1,
+    complexityScore: complexityScoreForModel(m.model),
     trainTimeMs: m.trainTimeMs,
     inferenceTimeMs: m.meanInferenceMs
   }));
@@ -1341,14 +1566,29 @@ export const getSymptomModelMetrics = () => {
 
   // ── State-of-the-art comparison (6.2.1) ──
   const stateOfTheArt = {
-    description: 'Reported headline metrics from published text-based neural network models on medical/clinical text classification. Provided for contextual comparison; datasets differ, so this is not a like-for-like benchmark.',
+    description: 'Comparison against other ML algorithms trained on the same Cura dataset, plus published neural-network baselines (different datasets; contextual reference only).',
     ours: {
       model: state.selectedModelName,
-      architecture: state.selectedModelName.startsWith('knn') ? 'k-Nearest Neighbours (instance-based)' : 'Multinomial Naive Bayes (probabilistic)',
+      architecture: architectureForModel(state.selectedModelName),
       year: 2025,
       accuracy: selected.metrics.accuracy,
       f1Score: kpiReport.macro.f1Score
     },
+    trainedOnDataset: comparativeStats
+      .filter((m) => m.model !== state.selectedModelName)
+      .map((m) => ({
+        model: m.model,
+        architecture: architectureForModel(m.model),
+        year: 2025,
+        accuracy: m.accuracy,
+        f1Score: m.f1Score,
+        precision: m.precision,
+        recall: m.recall,
+        balancedAccuracy: m.balancedAccuracy,
+        mcc: m.mcc,
+        macroAuc: m.macroAuc,
+        reference: 'Trained on Cura dataset (this work)'
+      })),
     baselines: STATE_OF_THE_ART_TEXT_NN
   };
 
