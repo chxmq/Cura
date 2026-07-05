@@ -3,6 +3,7 @@ import XLSX from 'xlsx';
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { resolveDatasetPath } from './resolveDatasetPath.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,12 +23,7 @@ export const processDataset = () => {
 
 const computeDataset = () => {
   try {
-    // Try to read dataset from current project root or legacy datasets folder.
-    const datasetCandidates = [
-      path.join(__dirname, '../../../New Dataset-8 symptoms-2025  (1).xlsx'),
-      path.join(__dirname, '../../../datasets/symptoms_2025.xlsx')
-    ];
-    const datasetPath = datasetCandidates.find((candidate) => existsSync(candidate));
+    const datasetPath = resolveDatasetPath(__dirname);
 
     let workbook;
     try {

@@ -24,6 +24,7 @@ yarn-error.log*
 # Datasets
 *.xlsx
 *.csv
+!datasets/symptoms_2025.xlsx
 eng.traineddata
 
 docs/

@@ -2,17 +2,13 @@ import XLSX from 'xlsx';
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
+import {
+  resolveDatasetPath,
+  formatDatasetLookupError
+} from '../utils/resolveDatasetPath.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Try the legacy filename first, then fall back to the canonical dataset
-// shipped in the repo. Using a list keeps things working for older clones.
-const DATASET_CANDIDATES = [
-  path.join(__dirname, '../../../New Dataset-8 symptoms-2025  (1).xlsx'),
-  path.join(__dirname, '../../../datasets/symptoms_2025.xlsx')
-];
-const resolveDatasetPath = () => DATASET_CANDIDATES.find((candidate) => existsSync(candidate));
 const SYMPTOM_COLUMNS = ['Fever', 'Common Cold', 'Cough', 'Body Pain', 'Headache', 'Menstrual Cramps', 'Sprain', 'Indigestion', 'Toothache'];
 const FOLLOW_UP_COLUMNS = ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4'];
 
@@ -1236,11 +1232,9 @@ const getRecommendationTextByNearestRows = (careClass, inputFeatures, trainSampl
 };
 
 const loadAndTrain = () => {
-  const datasetPath = resolveDatasetPath();
+  const datasetPath = resolveDatasetPath(__dirname);
   if (!datasetPath) {
-    throw new Error(
-      `Dataset not found. Looked in:\n${DATASET_CANDIDATES.map((p) => ` - ${p}`).join('\n')}`
-    );
+    throw new Error(formatDatasetLookupError(__dirname));
   }
 
   const workbook = XLSX.read(readFileSync(datasetPath), { type: 'buffer' });

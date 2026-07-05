@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 
 const Register = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,17 +27,17 @@ const Register = () => {
     const password = formData.password;
 
     if (!trimmedName || !normalizedEmail || !password) {
-      setError('Please fill in name, email, and password.');
+      setError(t('auth.fillAllFields'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('auth.passwordTooShort'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords don\'t match.');
+      setError(t('auth.passwordMismatch'));
       return;
     }
 
@@ -47,11 +49,11 @@ const Register = () => {
       if (response.success) {
         navigate('/');
       } else {
-        setError(response.error || 'Could not create your account.');
+        setError(response.error || t('auth.registerFailed'));
       }
     } catch (err) {
       const backendError = err?.response?.data?.error || err?.response?.data?.message;
-      setError(backendError || err?.message || 'Something went wrong while creating your account.');
+      setError(backendError || err?.message || t('auth.registerError'));
     } finally {
       setLoading(false);
     }
@@ -62,9 +64,9 @@ const Register = () => {
       <div className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
           <h1 className="font-display text-4xl font-semibold text-[#0f1f2e] tracking-tight">
-            Create your account
+            {t('auth.createAccount')}
           </h1>
-          <p className="mt-2 text-[#3e4c5b]">Takes less than a minute.</p>
+          <p className="mt-2 text-[#3e4c5b]">{t('auth.registerSubtitle')}</p>
         </div>
 
         <ErrorMessage message={error} onDismiss={() => setError('')} />
@@ -72,7 +74,7 @@ const Register = () => {
         <Card className="p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
-              label="Full name"
+              label={t('auth.fullName')}
               type="text"
               placeholder="Jane Doe"
               value={formData.name}
@@ -81,7 +83,7 @@ const Register = () => {
               autoComplete="name"
             />
             <Input
-              label="Email"
+              label={t('auth.email')}
               type="email"
               placeholder="you@example.com"
               value={formData.email}
@@ -91,7 +93,7 @@ const Register = () => {
             />
             <div className="grid sm:grid-cols-2 gap-4">
               <Input
-                label="Password"
+                label={t('auth.password')}
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
@@ -99,10 +101,10 @@ const Register = () => {
                 minLength={6}
                 required
                 autoComplete="new-password"
-                hint="At least 6 characters"
+                hint={t('auth.passwordHint')}
               />
               <Input
-                label="Confirm password"
+                label={t('auth.confirmPassword')}
                 type="password"
                 placeholder="••••••••"
                 value={formData.confirmPassword}
@@ -112,21 +114,16 @@ const Register = () => {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              isLoading={loading}
-            >
-              Create account
+            <Button type="submit" className="w-full" size="lg" isLoading={loading}>
+              {t('auth.createAccountBtn')}
             </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-[#e6e2d6] text-center">
             <p className="text-sm text-[#7b8593]">
-              Already have an account?{' '}
+              {t('auth.haveAccount')}{' '}
               <Link to="/login" className="text-[#0f766e] hover:text-[#115e59] font-medium">
-                Sign in
+                {t('nav.signIn')}
               </Link>
             </p>
           </div>

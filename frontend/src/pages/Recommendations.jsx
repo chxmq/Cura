@@ -6,8 +6,10 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 function SuggestionsBlock({ recommendation }) {
+  const { t } = useLanguage();
   const [suggestions, setSuggestions] = useState(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
@@ -38,7 +40,7 @@ function SuggestionsBlock({ recommendation }) {
   return (
     <Card>
       <h2 className="font-display text-xl font-semibold text-[#0f1f2e] mb-4 flex items-center gap-2">
-        <Sparkles className="text-[#0f766e]" size={18} /> AI suggestions
+        <Sparkles className="text-[#0f766e]" size={18} /> {t('recommendations.aiSuggestions')}
       </h2>
 
       {suggestions ? (
@@ -57,7 +59,7 @@ function SuggestionsBlock({ recommendation }) {
           {suggestions.followUpAdvice && (
             <div className="bg-[#d6f1ec]/40 border border-[#0f766e]/15 rounded-xl px-4 py-3">
               <p className="text-sm text-[#0f1f2e] leading-relaxed">
-                <span className="font-semibold text-[#0f766e]">When to see a doctor: </span>
+                <span className="font-semibold text-[#0f766e]">{t('recommendations.whenToSeeDoctor')} </span>
                 {suggestions.followUpAdvice}
               </p>
             </div>
@@ -86,6 +88,7 @@ function SuggestionsBlock({ recommendation }) {
 }
 
 const Recommendations = () => {
+  const { t } = useLanguage();
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -100,7 +103,7 @@ const Recommendations = () => {
       if (response.success) {
         setRecommendation(response.data);
         if (!response.data) {
-          setError('You don\'t have any recommendations yet.');
+          setError(t('recommendations.noRecommendations'));
         }
       } else {
         setError(response.error || 'No recommendations available.');
@@ -109,7 +112,7 @@ const Recommendations = () => {
       if (err.code === 'ERR_NETWORK' || err.message?.includes('ERR_CONNECTION_REFUSED')) {
         setError('Can\'t reach the server. Make sure the backend is running on port 5050.');
       } else {
-        setError(err.response?.data?.error || 'Couldn\'t load your recommendations.');
+        setError(err.response?.data?.error || t('recommendations.loadError'));
       }
     } finally {
       setLoading(false);
@@ -120,7 +123,7 @@ const Recommendations = () => {
     return (
       <div className="flex flex-col justify-center items-center min-h-[400px]">
         <LoadingSpinner size="lg" />
-        <p className="mt-5 text-sm text-[#7b8593]">Loading your recommendations…</p>
+        <p className="mt-5 text-sm text-[#7b8593]">{t('common.loading')}</p>
       </div>
     );
   }
@@ -129,10 +132,10 @@ const Recommendations = () => {
     <div className="max-w-4xl mx-auto pb-12">
       <div className="text-center mb-10 space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          Your recommendations
+          {t('recommendations.title')}
         </h1>
         <p className="text-[#3e4c5b] max-w-2xl mx-auto">
-          A summary of your most recent diagnostic session — medicines, schedule, and next steps.
+          {t('recommendations.subtitle')}
         </p>
       </div>
 

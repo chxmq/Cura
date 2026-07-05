@@ -15,22 +15,48 @@
     "hi": "हिन्दी",
     "kn": "ಕನ್ನಡ"
   },
+  "layout": {
+    "disclaimerTitle": "Important:",
+    "disclaimer": "Cura is an educational tool, not a substitute for a licensed clinician. If you have severe symptoms — high fever, chest pain, difficulty breathing, or anything that feels urgent — please seek medical care directly.",
+    "footer": "© {{year}} Cura · Built for educational use."
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to continue your care.",
+    "createAccount": "Create your account",
+    "registerSubtitle": "Takes less than a minute.",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "confirmPassword": "Confirm password",
+    "passwordHint": "At least 6 characters",
+    "signInFailed": "Could not sign you in. Please try again.",
+    "signInError": "Something went wrong while signing in.",
+    "registerFailed": "Could not create your account.",
+    "registerError": "Something went wrong while creating your account.",
+    "fillAllFields": "Please fill in name, email, and password.",
+    "passwordTooShort": "Password must be at least 6 characters.",
+    "passwordMismatch": "Passwords don't match.",
+    "newToCura": "New to Cura?",
+    "createAccountLink": "Create an account",
+    "haveAccount": "Already have an account?",
+    "createAccountBtn": "Create account"
+  },
   "home": {
     "tagline": "Health, with care.",
     "subtitle": "Symptom triage, prescription reading, and AI-guided care — in your language.",
     "ctaSymptoms": "Check symptoms",
     "ctaPrescription": "Read prescription",
-    "featureTriage": "Smart symptom triage",
-    "featureTriageDesc": "ML-powered guidance on whether to self-care, consult a doctor, or seek urgent care.",
-    "featurePrescription": "Prescription reader",
-    "featurePrescriptionDesc": "Upload a photo and get plain-language medicine explanations.",
-    "featureAssistant": "Health assistant",
-    "featureAssistantDesc": "Ask questions about symptoms, medicines, and next steps — by text or voice.",
     "featureMultilingual": "Multilingual support",
-    "featureMultilingualDesc": "Use Cura in English, Hindi, or Kannada — including voice input."
+    "featureMultilingualDesc": "Use Cura in English, Hindi, or Kannada — including voice input.",
+    "badge": "Gemini · Trained ML · OpenStreetMap",
+    "trustNoAds": "No ads, no data sales",
+    "trustMl": "Real ML, real metrics",
+    "trustFree": "Free during research"
   },
   "symptoms": {
     "title": "Symptom checker",
+    "subtitle": "Walk through four quick steps. We'll classify severity and suggest next steps.",
     "stepAbout": "About you",
     "stepSymptoms": "Symptoms",
     "stepFollowUp": "A few more questions",
@@ -39,10 +65,69 @@
     "voiceListening": "Listening…",
     "analyze": "Analyze symptoms",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "ageWeightRequired": "Please enter your age and weight before continuing.",
+    "pickSymptom": "Please pick at least one symptom.",
+    "age": "Age",
+    "weight": "Weight (kg)",
+    "sex": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "selectSymptoms": "Which symptoms do you have?",
+    "typeOrSpeak": "Type or speak symptoms below",
+    "analyzing": "Analyzing…"
+  },
+  "prescription": {
+    "title": "Prescription reader",
+    "subtitle": "Upload a photo of your prescription and get plain-language explanations.",
+    "dropzone": "Drag & drop a prescription image, or click to browse",
+    "formats": "JPG, PNG, or WebP",
+    "analyze": "Analyze prescription",
+    "analyzing": "Analyzing…",
+    "chooseImage": "Please choose a prescription image first.",
+    "imageOnly": "Please choose an image file (JPG, PNG, or WebP).",
+    "analyzeFailed": "Couldn't analyze that image.",
+    "serverDown": "Can't reach the server. Make sure the backend is running.",
+    "analyzeError": "Something went wrong while analyzing.",
+    "safe": "Looks safe",
+    "unsafe": "Needs review",
+    "uploadAnother": "Upload another"
+  },
+  "history": {
+    "title": "Your history",
+    "subtitle": "Past symptom checks and prescription analyses.",
+    "symptomsTab": "Symptoms",
+    "prescriptionsTab": "Prescriptions",
+    "loadError": "Couldn't load your history right now.",
+    "deleteConfirm": "Delete this record permanently?",
+    "emptySymptoms": "No symptom checks yet.",
+    "emptyPrescriptions": "No prescriptions yet.",
+    "checkSymptoms": "Check symptoms"
+  },
+  "care": {
+    "title": "Care near me",
+    "subtitle": "Find hospitals, clinics, and pharmacies nearby.",
+    "hospitals": "Hospitals & clinics",
+    "pharmacies": "Pharmacies",
+    "useLocation": "Use my location",
+    "noHospitals": "We couldn't find hospitals or clinics within range.",
+    "noPharmacies": "We couldn't find pharmacies within range.",
+    "geoUnsupported": "Your browser doesn't support geolocation. Using a default location.",
+    "geoDenied": "Couldn't access your location. Showing results for a default city."
+  },
+  "recommendations": {
+    "title": "Your recommendations",
+    "subtitle": "Follow-up guidance based on your latest check.",
+    "aiSuggestions": "AI suggestions",
+    "whenToSeeDoctor": "When to see a doctor:",
+    "loadError": "Couldn't load recommendations.",
+    "noRecommendations": "No recommendations yet.",
+    "checkSymptoms": "Check symptoms first"
   },
   "assistant": {
     "title": "Health assistant",
+    "subtitle": "A live video session with an AI doctor avatar. Speak naturally — the assistant is grounded in a medical knowledge base.",
     "greeting": "Hi, I'm your health assistant. Ask me about symptoms, medicines, or care guidance.",
     "placeholder": "Type or speak your question…",
     "send": "Send",
@@ -65,6 +150,8 @@
   "common": {
     "loading": "Loading…",
     "error": "Something went wrong",
-    "retry": "Try again"
+    "retry": "Try again",
+    "yes": "Yes",
+    "no": "No"
   }
 }

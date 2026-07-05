@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analyzePrescription } from '../services/prescriptionService.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 const PrescriptionAnalyzer = () => {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -26,7 +28,7 @@ const PrescriptionAnalyzer = () => {
   const processFile = (selectedFile) => {
     if (!selectedFile) return;
     if (!selectedFile.type.startsWith('image/')) {
-      setError('Please choose an image file (JPG, PNG, or WebP).');
+      setError(t('prescription.imageOnly'));
       return;
     }
     setFile(selectedFile);
@@ -57,7 +59,7 @@ const PrescriptionAnalyzer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
-      setError('Please choose a prescription image first.');
+      setError(t('prescription.chooseImage'));
       return;
     }
     setLoading(true);
@@ -67,13 +69,13 @@ const PrescriptionAnalyzer = () => {
       if (response.success) {
         setAnalysis(response.data);
       } else {
-        setError(response.error || 'Couldn\'t analyze that image.');
+        setError(response.error || t('prescription.analyzeFailed'));
       }
     } catch (err) {
       if (err.code === 'ERR_NETWORK' || err.message?.includes('ERR_CONNECTION_REFUSED')) {
-        setError('Can\'t reach the server. Make sure the backend is running on port 5050.');
+        setError(t('prescription.serverDown'));
       } else {
-        setError(err.response?.data?.error || 'Something went wrong while analyzing.');
+        setError(err.response?.data?.error || t('prescription.analyzeError'));
       }
     } finally {
       setLoading(false);
@@ -93,11 +95,10 @@ const PrescriptionAnalyzer = () => {
     <div className="max-w-5xl mx-auto pb-12">
       <div className="text-center mb-10 space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          Read your prescription
+          {t('prescription.title')}
         </h1>
         <p className="text-[#3e4c5b] max-w-2xl mx-auto">
-          Snap a photo, drop it here, and we'll extract the medicines, dosage, and timing.
-          We'll also flag obvious safety concerns.
+          {t('prescription.subtitle')}
         </p>
       </div>
 
@@ -143,8 +144,8 @@ const PrescriptionAnalyzer = () => {
                     <UploadCloud size={26} />
                   </div>
                   <div>
-                    <p className="text-base font-medium text-[#0f1f2e]">Drop your prescription here</p>
-                    <p className="text-sm text-[#7b8593] mt-1">JPG, PNG, or WebP — up to 5 MB</p>
+                    <p className="text-base font-medium text-[#0f1f2e]">{t('prescription.dropzone')}</p>
+                    <p className="text-sm text-[#7b8593] mt-1">{t('prescription.formats')}</p>
                   </div>
                 </div>
               )}
@@ -158,7 +159,7 @@ const PrescriptionAnalyzer = () => {
                 size="lg"
                 className="sm:min-w-[200px]"
               >
-                Analyze prescription
+                {loading ? t('prescription.analyzing') : t('prescription.analyze')}
               </Button>
               {preview && (
                 <Button type="button" variant="ghost" onClick={handleReset} size="lg">

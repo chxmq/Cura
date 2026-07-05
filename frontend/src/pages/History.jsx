@@ -19,6 +19,7 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 const severityBadge = {
   Mild: 'bg-[#dcfce7] text-[#166534]',
@@ -27,6 +28,7 @@ const severityBadge = {
 };
 
 const History = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('symptoms');
   const [symptomHistory, setSymptomHistory] = useState([]);
@@ -50,14 +52,14 @@ const History = () => {
       if (symptomRes.success) setSymptomHistory(symptomRes.data || []);
       if (prescriptionRes.success) setPrescriptionHistory(prescriptionRes.data || []);
     } catch {
-      setError('Couldn\'t load your history right now.');
+      setError(t('history.loadError'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id, type) => {
-    if (!window.confirm('Delete this record permanently?')) return;
+    if (!window.confirm(t('history.deleteConfirm'))) return;
     try {
       if (type === 'symptoms') {
         await deleteSymptomHistory(id);
@@ -173,10 +175,10 @@ const History = () => {
     <div className="max-w-6xl mx-auto pb-12">
       <div className="text-center mb-10 space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          Your history
+          {t('history.title')}
         </h1>
         <p className="text-[#3e4c5b]">
-          Every symptom check and prescription you've run, in one place.
+          {t('history.subtitle')}
         </p>
       </div>
 
@@ -193,7 +195,7 @@ const History = () => {
                   : 'text-[#3e4c5b] hover:bg-[#f0eee6]'
               }`}
             >
-              <Activity size={18} /> Symptom checks
+              <Activity size={18} /> {t('history.symptomsTab')}
             </button>
             <button
               onClick={() => setActiveTab('prescriptions')}
@@ -203,7 +205,7 @@ const History = () => {
                   : 'text-[#3e4c5b] hover:bg-[#f0eee6]'
               }`}
             >
-              <FileText size={18} /> Prescriptions
+              <FileText size={18} /> {t('history.prescriptionsTab')}
             </button>
           </Card>
 

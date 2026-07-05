@@ -245,7 +245,7 @@ const Home = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0f766e] opacity-60" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0f766e]" />
                 </span>
-                Gemini · Trained ML · OpenStreetMap
+                {t('home.badge')}
               </span>
 
               <h1 className="font-display font-semibold tracking-tight text-[#0f1f2e] leading-[1.0]">
@@ -281,13 +281,13 @@ const Home = () => {
 
               <div className="flex flex-wrap items-center lg:justify-start justify-center gap-x-6 gap-y-2 pt-3 text-sm text-[#7b8593]">
                 <span className="flex items-center gap-1.5">
-                  <ShieldCheck size={14} className="text-[#0f766e]" /> No ads, no data sales
+                  <ShieldCheck size={14} className="text-[#0f766e]" /> {t('home.trustNoAds')}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Activity size={14} className="text-[#0f766e]" /> Real ML, real metrics
+                  <Activity size={14} className="text-[#0f766e]" /> {t('home.trustMl')}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={14} className="text-[#0f766e]" /> Free during research
+                  <Clock size={14} className="text-[#0f766e]" /> {t('home.trustFree')}
                 </span>
               </div>
             </div>

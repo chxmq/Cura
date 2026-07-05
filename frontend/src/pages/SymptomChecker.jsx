@@ -76,13 +76,13 @@ const SymptomChecker = () => {
     setError('');
     if (step === 1) {
       if (!personalData.age || !personalData.weight) {
-        setError('Please enter your age and weight before continuing.');
+        setError(t('symptoms.ageWeightRequired'));
         return;
       }
       setStep(2);
     } else if (step === 2) {
       if (selectedSymptoms.length === 0) {
-        setError('Please pick at least one symptom.');
+        setError(t('symptoms.pickSymptom'));
         return;
       }
       setStep(3);
@@ -231,7 +231,7 @@ const SymptomChecker = () => {
           {t('symptoms.title')}
         </h1>
         <p className="text-[#3e4c5b]">
-          Walk through four quick steps. We'll classify the severity and suggest next steps.
+          {t('symptoms.subtitle')}
         </p>
       </div>
 
@@ -267,7 +267,7 @@ const SymptomChecker = () => {
 
             <div className="grid sm:grid-cols-2 gap-5">
               <Input
-                label="Age"
+                label={t('symptoms.age')}
                 type="number"
                 placeholder="e.g. 28"
                 value={personalData.age}
@@ -287,7 +287,7 @@ const SymptomChecker = () => {
                 </select>
               </div>
               <Input
-                label="Weight (kg)"
+                label={t('symptoms.weight')}
                 type="number"
                 placeholder="e.g. 70"
                 value={personalData.weight}
@@ -371,7 +371,7 @@ const SymptomChecker = () => {
 
             <div className="flex justify-between pt-2">
               <Button variant="ghost" onClick={prevStep}>
-                <ArrowLeft size={16} /> Back
+                <ArrowLeft size={16} /> {t('symptoms.back')}
               </Button>
               <Button onClick={nextStep} size="lg">
                 Continue <ArrowRight size={16} />
@@ -419,10 +419,10 @@ const SymptomChecker = () => {
 
             <div className="flex justify-between pt-2">
               <Button variant="ghost" onClick={prevStep} disabled={loading}>
-                <ArrowLeft size={16} /> Back
+                <ArrowLeft size={16} /> {t('symptoms.back')}
               </Button>
               <Button onClick={nextStep} isLoading={loading} size="lg">
-                Analyze symptoms
+                {t('symptoms.analyze')}
               </Button>
             </div>
           </div>

@@ -5,8 +5,10 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 const CareNearMe = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('hospitals');
   const [hospitals, setHospitals] = useState([]);
   const [pharmacies, setPharmacies] = useState([]);
@@ -18,7 +20,7 @@ const CareNearMe = () => {
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      setLocationError('Your browser doesn\'t support geolocation. Using a default location.');
+      setLocationError(t('care.geoUnsupported'));
       setUserLocation({ lat: 28.6139, lng: 77.2090 });
       return;
     }
@@ -31,7 +33,7 @@ const CareNearMe = () => {
         setLocationError('');
       },
       () => {
-        setLocationError('Couldn\'t access your location. Showing results for a default city.');
+        setLocationError(t('care.geoDenied'));
         setUserLocation({ lat: 28.6139, lng: 77.2090 });
         setLoadedTabs({ hospitals: false, pharmacies: false });
       },
@@ -56,12 +58,12 @@ const CareNearMe = () => {
         const hospitalsRes = await getNearbyHospitals(lat, lng);
         const data = Array.isArray(hospitalsRes.data) ? hospitalsRes.data : [];
         if (hospitalsRes.success) setHospitals(data);
-        if (!data.length) setError('We couldn\'t find hospitals or clinics within range.');
+        if (!data.length) setError(t('care.noHospitals'));
       } else {
         const pharmaciesRes = await getNearbyPharmacies(lat, lng);
         const data = Array.isArray(pharmaciesRes.data) ? pharmaciesRes.data : [];
         if (pharmaciesRes.success) setPharmacies(data);
-        if (!data.length) setError('We couldn\'t find pharmacies within range.');
+        if (!data.length) setError(t('care.noPharmacies'));
       }
 
       setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
@@ -95,10 +97,10 @@ const CareNearMe = () => {
     <div className="max-w-7xl mx-auto pb-12">
       <div className="text-center mb-10 space-y-3">
         <h1 className="font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-          Care nearby
+          {t('care.title')}
         </h1>
         <p className="text-[#3e4c5b] max-w-2xl mx-auto">
-          Hospitals, clinics, and pharmacies within 5 km of you. Sourced from OpenStreetMap.
+          {t('care.subtitle')}
         </p>
       </div>
 
@@ -140,7 +142,7 @@ const CareNearMe = () => {
                   : 'text-[#3e4c5b] hover:bg-[#f0eee6]'
               }`}
             >
-              <Hospital size={18} /> Hospitals & clinics
+              <Hospital size={18} /> {t('care.hospitals')}
             </button>
               <button
                 onClick={() => setActiveTab('pharmacies')}
@@ -150,7 +152,7 @@ const CareNearMe = () => {
                   : 'text-[#3e4c5b] hover:bg-[#f0eee6]'
               }`}
             >
-              <Pill size={18} /> Pharmacies
+              <Pill size={18} /> {t('care.pharmacies')}
             </button>
           </Card>
         </div>

@@ -248,8 +248,7 @@ const Teleconsultation = () => {
           {t('assistant.title')}
         </h1>
         <p className="text-[#3e4c5b] max-w-2xl mx-auto">
-          A live video session with an AI doctor avatar. Speak naturally — the
-          assistant is grounded in a medical knowledge base.
+          {t('assistant.subtitle')}
         </p>
       </div>
 
