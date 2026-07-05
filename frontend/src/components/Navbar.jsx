@@ -58,7 +58,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <span className="text-sm font-medium text-[#3e4c5b]">
-                  {t('nav.greeting', { name: user.name?.split(' ')[0] || 'there' })}
+                  {t('nav.greeting', { name: user.name?.split(' ')[0] || t('nav.guestName') })}
                 </span>
                 <Button variant="secondary" size="sm" onClick={logout}>
                   {t('nav.signOut')}
@@ -80,7 +80,7 @@ const Navbar = () => {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-2 rounded-lg text-[#0f1f2e] hover:bg-[#f0eee6] transition-colors"
-            aria-label="Toggle menu"
+            aria-label={t('nav.toggleMenu')}
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>

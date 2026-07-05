@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const Button = ({
   children,
@@ -6,9 +7,13 @@ const Button = ({
   size = 'md',
   className = '',
   isLoading = false,
+  loadingText,
   disabled = false,
   ...props
 }) => {
+  const { t } = useLanguage();
+  const resolvedLoadingText = loadingText ?? t('common.loading');
+
   const base =
     'inline-flex items-center justify-center gap-2 font-medium rounded-full transition-all duration-200 ' +
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0f766e] ' +
@@ -47,7 +52,7 @@ const Button = ({
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
           </svg>
-          <span>Loading…</span>
+          <span>{resolvedLoadingText}</span>
         </>
       ) : children}
     </button>

@@ -72,7 +72,10 @@ router.post('/register', async (req, res, next) => {
 // Login user
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const rawEmail = req.body?.email;
+    const rawPassword = req.body?.password;
+    const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+    const password = typeof rawPassword === 'string' ? rawPassword : '';
 
     if (!process.env.JWT_SECRET) {
       return res.status(500).json({

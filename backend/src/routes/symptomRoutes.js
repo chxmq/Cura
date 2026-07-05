@@ -1,6 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
 import SymptomAnalysis from '../models/SymptomAnalysis.js';
+import Recommendation from '../models/Recommendation.js';
 import { createRecommendationFromAnalysis } from '../services/recommendationService.js';
 import { predictSymptomAssessment, getSymptomModelMetrics } from '../services/symptomMlModelService.js';
 import { getMedicineCombinationFromGemini } from '../services/geminiService.js';
@@ -139,7 +140,7 @@ router.delete('/:id', auth, async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'Analysis not found' });
     }
 
-    // Scope deletion by both id and userId to prevent cross-user deletes.
+    await Recommendation.deleteMany({ symptomAnalysisId: req.params.id, userId: req.userId });
     await SymptomAnalysis.deleteOne({ _id: req.params.id, userId: req.userId });
     res.json({ success: true, message: 'Analysis deleted' });
   } catch (error) {

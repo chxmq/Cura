@@ -105,7 +105,12 @@ app.use('/api/speech', speechRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Healthcare API is running' });
+  const dbReady = mongoose.connection.readyState === 1;
+  res.status(dbReady ? 200 : 503).json({
+    status: dbReady ? 'ok' : 'degraded',
+    message: 'Healthcare API is running',
+    database: dbReady ? 'connected' : 'disconnected'
+  });
 });
 
 // Error handling middleware (must be last)

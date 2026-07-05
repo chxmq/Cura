@@ -31,7 +31,7 @@ function SuggestionsBlock({ recommendation }) {
       });
       if (res.success && res.data) setSuggestions(res.data);
     } catch (e) {
-      setErr(e.response?.data?.error || e.message || 'Couldn\'t load suggestions.');
+      setErr(e.response?.data?.error || e.message || t('recommendations.suggestionError'));
     } finally {
       setLoading(false);
     }
@@ -65,13 +65,13 @@ function SuggestionsBlock({ recommendation }) {
             </div>
           )}
           <Button variant="ghost" size="sm" onClick={fetchSuggestions}>
-            Re-generate suggestions
+            {t('recommendations.regenerateSuggestions')}
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-[#3e4c5b]">
-            Get personalised guidance — what to monitor, what to avoid, and when to follow up.
+            {t('recommendations.guidanceText')}
           </p>
           {err && (
             <p className="text-xs text-[#dc2626] flex items-center gap-1.5">
@@ -79,7 +79,7 @@ function SuggestionsBlock({ recommendation }) {
             </p>
           )}
           <Button onClick={fetchSuggestions} disabled={loading} isLoading={loading}>
-            Generate suggestions
+            {t('recommendations.generateSuggestions')}
           </Button>
         </div>
       )}
@@ -106,11 +106,11 @@ const Recommendations = () => {
           setError(t('recommendations.noRecommendations'));
         }
       } else {
-        setError(response.error || 'No recommendations available.');
+        setError(response.error || t('recommendations.noRecommendations'));
       }
     } catch (err) {
       if (err.code === 'ERR_NETWORK' || err.message?.includes('ERR_CONNECTION_REFUSED')) {
-        setError('Can\'t reach the server. Make sure the backend is running on port 5050.');
+        setError(t('care.serverError'));
       } else {
         setError(err.response?.data?.error || t('recommendations.loadError'));
       }
@@ -146,9 +146,12 @@ const Recommendations = () => {
           {recommendation.medicines && recommendation.medicines.length > 0 && (
             <Card>
               <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#e6e2d6]">
-                <h2 className="font-display text-xl font-semibold text-[#0f1f2e]">Medicines</h2>
+                <h2 className="font-display text-xl font-semibold text-[#0f1f2e]">{t('recommendations.medicines')}</h2>
                 <span className="text-xs font-medium text-[#7b8593] bg-[#f0eee6] px-3 py-1 rounded-full">
-                  {recommendation.medicines.length} item{recommendation.medicines.length === 1 ? '' : 's'}
+                  {recommendation.medicines.length}{' '}
+                  {recommendation.medicines.length === 1
+                    ? t('recommendations.item')
+                    : t('recommendations.items')}
                 </span>
               </div>
               <div className="space-y-3">
@@ -161,21 +164,21 @@ const Recommendations = () => {
                       <h3 className="text-lg font-semibold text-[#0f1f2e]">{medicine.name}</h3>
                       <div className="flex flex-wrap gap-2 text-xs">
                         <span className="px-2.5 py-1 bg-white border border-[#d4cfbf] rounded-full text-[#3e4c5b]">
-                          Dose: {medicine.dosage}
+                          {t('recommendations.dose')} {medicine.dosage}
                         </span>
                         <span className="px-2.5 py-1 bg-white border border-[#d4cfbf] rounded-full text-[#3e4c5b]">
-                          Duration: {medicine.duration}
+                          {t('recommendations.duration')} {medicine.duration}
                         </span>
                       </div>
                     </div>
                     {medicine.timing?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
-                        {medicine.timing.map((t, i) => (
+                        {medicine.timing.map((time, i) => (
                           <span
                             key={i}
                             className="px-3 py-1 rounded-full bg-[#d6f1ec] text-[#0f766e] text-xs font-medium"
                           >
-                            {t}
+                            {time}
                           </span>
                         ))}
                       </div>
@@ -188,7 +191,7 @@ const Recommendations = () => {
 
           {recommendation.followUpDate && (
             <Card className="bg-[#f0eee6]/50 border-[#e6e2d6] text-center py-8">
-              <p className="text-xs uppercase tracking-wide text-[#0f766e] font-semibold">Follow up</p>
+              <p className="text-xs uppercase tracking-wide text-[#0f766e] font-semibold">{t('recommendations.followUp')}</p>
               <p className="mt-3 font-display text-3xl font-semibold text-[#0f1f2e]">
                 {new Date(recommendation.followUpDate).toLocaleDateString(undefined, {
                   weekday: 'long',
@@ -198,7 +201,7 @@ const Recommendations = () => {
                 })}
               </p>
               <p className="mt-2 text-sm text-[#3e4c5b] max-w-md mx-auto">
-                Re-evaluate how you're feeling on or before this date.
+                {t('recommendations.followUpReEvaluate')}
               </p>
             </Card>
           )}
@@ -206,21 +209,21 @@ const Recommendations = () => {
           <SuggestionsBlock recommendation={recommendation} />
 
           <Card className="bg-[#fef3c7]/40 border-[#fde68a]">
-            <h3 className="text-sm font-semibold text-[#854d0e] mb-3">Things to keep in mind</h3>
+            <h3 className="text-sm font-semibold text-[#854d0e] mb-3">{t('recommendations.thingsToKeepInMind')}</h3>
             <ul className="space-y-2 text-sm text-[#7c5210]">
-              <li className="flex gap-2"><span>•</span> Stick to the dose and timing above.</li>
-              <li className="flex gap-2"><span>•</span> Don't stop early just because you feel better.</li>
-              <li className="flex gap-2"><span>•</span> If symptoms get worse, talk to a doctor right away.</li>
-              <li className="flex gap-2"><span>•</span> Note any side effects to share at your next visit.</li>
+              <li className="flex gap-2"><span>•</span> {t('recommendations.bulletStickDose')}</li>
+              <li className="flex gap-2"><span>•</span> {t('recommendations.bulletDontStopEarly')}</li>
+              <li className="flex gap-2"><span>•</span> {t('recommendations.bulletWorseSymptoms')}</li>
+              <li className="flex gap-2"><span>•</span> {t('recommendations.bulletSideEffects')}</li>
             </ul>
           </Card>
         </div>
       ) : (
         <Card className="text-center py-16 border-dashed">
           <p className="text-[#3e4c5b]">
-            You haven't run a symptom check yet.{' '}
+            {t('recommendations.emptyStart')}{' '}
             <Link to="/symptoms" className="text-[#0f766e] hover:text-[#115e59] font-medium underline-offset-4 hover:underline">
-              Start one now
+              {t('recommendations.startOneNow')}
             </Link>
             .
           </p>

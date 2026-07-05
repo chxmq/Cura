@@ -75,7 +75,7 @@ const Teleconsultation = () => {
       const configuredAvatarId = (import.meta.env.VITE_HEYGEN_AVATAR_ID || '').trim();
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(configuredAvatarId);
       const token = await getHeygenAccessToken(isUuid ? configuredAvatarId : undefined);
-      if (!token) throw new Error('Backend didn\'t return a HeyGen session token. Check LIVEAVATAR_API_KEY in your .env.');
+      if (!token) throw new Error(t('assistant.noHeygenToken'));
 
       avatarRef.current = new LiveAvatarSession(token, { voiceChat: false });
 
@@ -99,7 +99,7 @@ const Teleconsultation = () => {
       await avatarRef.current.start();
       await enableAvatarAudio();
     } catch (err) {
-      const msg = err?.message || 'Couldn\'t start the doctor avatar.';
+      const msg = err?.message || t('assistant.avatarErrorGeneric');
       setAvatarError(msg);
     } finally {
       setAvatarLoading(false);
@@ -130,7 +130,7 @@ const Teleconsultation = () => {
       setAvatarError('');
     } catch {
       setAvatarAudioEnabled(false);
-      setAvatarError('Audio is blocked by your browser. Click "Enable audio" to allow it.');
+      setAvatarError(t('assistant.audioBlocked'));
     }
   };
 
@@ -182,8 +182,8 @@ const Teleconsultation = () => {
         avatarRef.current.message(text);
         setAvatarError('');
       } catch (secondError) {
-        const detail = secondError?.message || firstError?.message || 'Avatar speak failed.';
-        setAvatarError(`Avatar audio failed: ${detail}`);
+        const detail = secondError?.message || firstError?.message || t('assistant.avatarErrorGeneric');
+        setAvatarError(t('assistant.avatarSpeakFailed', { detail }));
       }
     }
   };
@@ -228,16 +228,16 @@ const Teleconsultation = () => {
 
   // -------- Avatar status pill --------
 
-  let statusLabel = 'Connecting…';
+  let statusLabel = t('assistant.connecting');
   let statusClass = 'bg-[#fef3c7] text-[#854d0e]';
   if (avatarReady && avatarSpeaking) {
-    statusLabel = 'Doctor speaking';
+    statusLabel = t('assistant.doctorSpeaking');
     statusClass = 'bg-[#dbeafe] text-[#1e40af]';
   } else if (avatarReady) {
-    statusLabel = 'Live';
+    statusLabel = t('assistant.live');
     statusClass = 'bg-[#dcfce7] text-[#166534]';
   } else if (avatarError && avatarAttempted) {
-    statusLabel = 'Disconnected';
+    statusLabel = t('assistant.disconnected');
     statusClass = 'bg-[#fee2e2] text-[#991b1b]';
   }
 
@@ -271,29 +271,29 @@ const Teleconsultation = () => {
                   {avatarLoading || (avatarAttempted && !avatarError) ? (
                     <>
                       <Loader2 size={36} className="animate-spin text-[#5eead4]" />
-                      <p className="text-lg font-medium">Connecting to your AI doctor…</p>
+                      <p className="text-lg font-medium">{t('assistant.connecting')}</p>
                       <p className="text-sm text-white/60 max-w-sm">
-                        Setting up the live video session. This usually takes 5–10 seconds.
+                        {t('assistant.connectingDetail')}
                       </p>
                     </>
                   ) : avatarError ? (
                     <>
                       <AlertCircle size={36} className="text-[#fca5a5]" />
-                      <p className="text-lg font-medium">Avatar couldn't start</p>
+                      <p className="text-lg font-medium">{t('assistant.avatarCouldntStart')}</p>
                       <p className="text-sm text-white/70 max-w-md leading-relaxed">{avatarError}</p>
                       <Button variant="primary" size="sm" onClick={startAvatarSession}>
-                        Try again
+                        {t('assistant.retry')}
                       </Button>
                       <p className="text-xs text-white/50 max-w-md mt-2">
-                        You can still chat below — the AI assistant works without the avatar.
+                        {t('assistant.chatWithoutAvatar')}
                       </p>
                     </>
                   ) : (
                     <>
                       <Video size={36} className="text-[#5eead4]" />
-                      <p className="text-lg font-medium">Ready to start</p>
+                      <p className="text-lg font-medium">{t('assistant.readyToStart')}</p>
                       <Button variant="primary" size="sm" onClick={startAvatarSession}>
-                        <Video size={14} /> Start session
+                        <Video size={14} /> {t('assistant.startSession')}
                       </Button>
                     </>
                   )}
@@ -316,14 +316,14 @@ const Teleconsultation = () => {
                   <button
                     onClick={enableAvatarAudio}
                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                    aria-label={avatarAudioEnabled ? 'Audio on' : 'Enable audio'}
+                    aria-label={avatarAudioEnabled ? t('assistant.audioOn') : t('assistant.enableAudio')}
                   >
                     {avatarAudioEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
                   </button>
                   <button
                     onClick={stopAvatarSession}
                     className="w-10 h-10 rounded-full bg-[#dc2626] hover:bg-[#b91c1c] text-white flex items-center justify-center transition-colors"
-                    aria-label="End session"
+                    aria-label={t('assistant.endSession')}
                   >
                     <PhoneOff size={16} />
                   </button>
@@ -336,16 +336,16 @@ const Teleconsultation = () => {
           <Card className="bg-[#f0eee6]/40 py-4">
             <div className="grid sm:grid-cols-3 gap-4">
               <div>
-                <p className="text-[10px] font-semibold text-[#0f766e] uppercase tracking-wide">LLM</p>
-                <p className="mt-0.5 text-sm text-[#0f1f2e] font-medium">Gemini 2.5 Flash</p>
+                <p className="text-[10px] font-semibold text-[#0f766e] uppercase tracking-wide">{t('assistant.telemetryLlm')}</p>
+                <p className="mt-0.5 text-sm text-[#0f1f2e] font-medium">{t('assistant.telemetryLlmValue')}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-[#0f766e] uppercase tracking-wide">RAG</p>
-                <p className="mt-0.5 text-sm text-[#0f1f2e] font-medium">LangChain · Medical context</p>
+                <p className="text-[10px] font-semibold text-[#0f766e] uppercase tracking-wide">{t('assistant.telemetryRag')}</p>
+                <p className="mt-0.5 text-sm text-[#0f1f2e] font-medium">{t('assistant.telemetryRagValue')}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-[#0f766e] uppercase tracking-wide">Avatar</p>
-                <p className="mt-0.5 text-sm text-[#0f1f2e] font-medium">HeyGen LiveAvatar</p>
+                <p className="text-[10px] font-semibold text-[#0f766e] uppercase tracking-wide">{t('assistant.telemetryAvatar')}</p>
+                <p className="mt-0.5 text-sm text-[#0f1f2e] font-medium">{t('assistant.telemetryAvatarValue')}</p>
               </div>
             </div>
           </Card>
@@ -367,7 +367,7 @@ const Teleconsultation = () => {
                     }`}
                   >
                     <p className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${isUser ? 'text-white/70' : 'text-[#7b8593]'}`}>
-                      {isUser ? 'You' : 'Doctor'}
+                      {isUser ? t('assistant.you') : t('assistant.doctor')}
                     </p>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                     {msg.sources?.length ? (
@@ -378,7 +378,7 @@ const Teleconsultation = () => {
                             className={`text-[11px] ${isUser ? 'text-white/70' : 'text-[#7b8593]'} flex gap-1`}
                           >
                             <Sparkles size={10} className="mt-0.5 shrink-0" />
-                            <span>Source {source.id}: {source.excerpt}</span>
+                            <span>{t('assistant.source', { id: source.id, excerpt: source.excerpt })}</span>
                           </p>
                         ))}
                       </div>
@@ -399,21 +399,21 @@ const Teleconsultation = () => {
                     submitQuery();
                   }
                 }}
-                placeholder={avatarReady ? 'Ask the doctor anything…' : 'Type your question…'}
+                placeholder={avatarReady ? t('assistant.askDoctorAnything') : t('assistant.typeQuestion')}
                 rows={2}
                 className="w-full px-4 py-3 bg-[#f0eee6]/50 border border-[#d4cfbf] rounded-xl text-sm text-[#0f1f2e] placeholder:text-[#9aa3b1] focus:outline-none focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10 resize-none"
               />
               <div className="flex flex-wrap gap-2">
                 <Button onClick={submitQuery} disabled={loading} size="sm">
                   {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                  Send
+                  {t('assistant.send')}
                 </Button>
                 <Button variant="ghost" onClick={toggleListening} size="sm">
                   <Mic size={14} className={listening ? 'text-[#dc2626]' : ''} />
                   {listening ? t('assistant.listening') : t('assistant.voiceInput')}
                 </Button>
                 <Button variant="ghost" onClick={() => setVoiceEnabled((v) => !v)} size="sm">
-                  <Volume2 size={14} /> {voiceEnabled ? 'Speak: on' : 'Speak: off'}
+                  <Volume2 size={14} /> {voiceEnabled ? t('assistant.speakToggleOn') : t('assistant.speakToggleOff')}
                 </Button>
               </div>
               {error && <p className="text-xs text-[#dc2626]">{error}</p>}

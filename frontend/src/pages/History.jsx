@@ -69,7 +69,7 @@ const History = () => {
         setPrescriptionHistory((prev) => prev.filter((item) => item._id !== id));
       }
     } catch {
-      setError('Couldn\'t delete that record. Try again.');
+      setError(t('history.deleteFailed'));
     }
   };
 
@@ -89,20 +89,20 @@ const History = () => {
       const needsConsult = item.recommendations?.teleconsultationRecommended || item.severity === 'High';
       return [
         {
-          label: 'View',
+          label: t('history.view'),
           icon: Eye,
           variant: 'secondary',
           onClick: () => setExpandedId(expandedId === item._id ? null : item._id)
         },
         {
-          label: 'Run again',
+          label: t('history.runAgain'),
           icon: RotateCcw,
           variant: 'ghost',
           onClick: () => navigate('/symptoms')
         },
         ...(needsConsult
           ? [{
-              label: 'Assistant',
+              label: t('history.assistant'),
               icon: MessageSquareHeart,
               variant: 'primary',
               onClick: () => navigate('/teleconsultation')
@@ -110,14 +110,14 @@ const History = () => {
           : []),
         ...(item.severity === 'High'
           ? [{
-              label: 'Nearby care',
+              label: t('history.nearbyCare'),
               icon: MapPin,
               variant: 'accent',
               onClick: () => navigate('/care-near-me')
             }]
           : []),
         {
-          label: 'Download',
+          label: t('history.download'),
           icon: Download,
           variant: 'ghost',
           onClick: () => downloadRecord(item, 'symptom')
@@ -128,45 +128,51 @@ const History = () => {
     const unsafe = item.safetyStatus?.status === 'unsafe';
     return [
       {
-        label: 'View',
+        label: t('history.view'),
         icon: Eye,
         variant: 'secondary',
         onClick: () => setExpandedId(expandedId === item._id ? null : item._id)
       },
       {
-        label: 'New scan',
+        label: t('history.newScan'),
         icon: RotateCcw,
         variant: 'ghost',
         onClick: () => navigate('/prescription')
       },
       ...(unsafe
         ? [{
-            label: 'Assistant',
+            label: t('history.assistant'),
             icon: MessageSquareHeart,
             variant: 'primary',
             onClick: () => navigate('/teleconsultation')
           }]
         : [{
-            label: 'Pharmacies',
+            label: t('history.pharmacies'),
             icon: Pill,
             variant: 'primary',
             onClick: () => navigate('/care-near-me')
           }]),
       ...(unsafe
         ? [{
-            label: 'Nearby clinic',
+            label: t('history.nearbyClinic'),
             icon: MapPin,
             variant: 'accent',
             onClick: () => navigate('/care-near-me')
           }]
         : []),
       {
-        label: 'Download',
+        label: t('history.download'),
         icon: Download,
         variant: 'ghost',
         onClick: () => downloadRecord(item, 'prescription')
       }
     ];
+  };
+
+  const severityLabel = {
+    Mild: t('history.severityMild'),
+    Moderate: t('history.severityModerate'),
+    High: t('history.severityHigh')
   };
 
   const list = activeTab === 'symptoms' ? symptomHistory : prescriptionHistory;
@@ -210,22 +216,25 @@ const History = () => {
           </Card>
 
           <Card className="bg-[#f0eee6]/50">
-            <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">Total records</p>
+            <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">{t('history.totalRecords')}</p>
             <p className="mt-2 font-display text-3xl font-semibold text-[#0f1f2e]">
               {symptomHistory.length + prescriptionHistory.length}
             </p>
             <p className="mt-1 text-xs text-[#7b8593]">
-              {symptomHistory.length} symptom · {prescriptionHistory.length} prescription
+              {t('history.recordsBreakdown', {
+                symptoms: symptomHistory.length,
+                prescriptions: prescriptionHistory.length
+              })}
             </p>
           </Card>
 
           <Card className="bg-white">
-            <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">Available actions</p>
+            <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">{t('history.availableActions')}</p>
             <ul className="mt-3 space-y-2 text-sm text-[#3e4c5b]">
-              <li className="flex gap-2"><Eye size={14} className="text-[#0f766e] mt-0.5" /> View full record</li>
-              <li className="flex gap-2"><RotateCcw size={14} className="text-[#0f766e] mt-0.5" /> Run the flow again</li>
-              <li className="flex gap-2"><MessageSquareHeart size={14} className="text-[#0f766e] mt-0.5" /> Open assistant when needed</li>
-              <li className="flex gap-2"><Download size={14} className="text-[#0f766e] mt-0.5" /> Download JSON copy</li>
+              <li className="flex gap-2"><Eye size={14} className="text-[#0f766e] mt-0.5" /> {t('history.actionView')}</li>
+              <li className="flex gap-2"><RotateCcw size={14} className="text-[#0f766e] mt-0.5" /> {t('history.actionRunAgain')}</li>
+              <li className="flex gap-2"><MessageSquareHeart size={14} className="text-[#0f766e] mt-0.5" /> {t('history.actionAssistant')}</li>
+              <li className="flex gap-2"><Download size={14} className="text-[#0f766e] mt-0.5" /> {t('history.actionDownload')}</li>
             </ul>
           </Card>
         </div>
@@ -234,7 +243,7 @@ const History = () => {
           {loading ? (
             <Card className="p-16 flex flex-col items-center justify-center min-h-[400px]">
               <LoadingSpinner size="lg" />
-              <p className="mt-6 text-sm text-[#7b8593]">Loading history…</p>
+              <p className="mt-6 text-sm text-[#7b8593]">{t('history.loadingHistory')}</p>
             </Card>
           ) : list.length > 0 ? (
             <div className="space-y-3 animate-slide-up">
@@ -261,7 +270,7 @@ const History = () => {
                             {activeTab === 'symptoms'
                               ? item.symptoms?.slice(0, 3).join(', ') +
                                 (item.symptoms?.length > 3 ? '…' : '')
-                              : `Dr. ${item.extractedData?.doctorName || 'Unknown'}`}
+                              : `Dr. ${item.extractedData?.doctorName || t('history.unknown')}`}
                           </h3>
                           <p className="text-xs text-[#7b8593] mt-0.5">
                             {new Date(item.createdAt).toLocaleString()}
@@ -272,7 +281,7 @@ const History = () => {
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs font-medium ${severityBadge[item.severity] || ''}`}
                             >
-                              {item.severity}
+                              {severityLabel[item.severity] || item.severity}
                             </span>
                           )}
                           {activeTab === 'prescriptions' && item.safetyStatus?.status && (
@@ -283,7 +292,9 @@ const History = () => {
                                   : 'bg-[#fee2e2] text-[#991b1b]'
                               }`}
                             >
-                              {item.safetyStatus.status}
+                              {item.safetyStatus.status === 'safe'
+                                ? t('history.statusSafe')
+                                : t('history.statusUnsafe')}
                             </span>
                           )}
                         </div>
@@ -292,7 +303,7 @@ const History = () => {
                         <button
                           onClick={() => setExpandedId(isExpanded ? null : item._id)}
                           className="p-2 text-[#3e4c5b] hover:text-[#0f1f2e] hover:bg-[#f0eee6] rounded-lg transition-colors"
-                          aria-label="Toggle details"
+                          aria-label={t('history.toggleDetails')}
                         >
                           <ChevronDown
                             size={18}
@@ -320,7 +331,7 @@ const History = () => {
                         variant="danger"
                         onClick={() => handleDelete(item._id, activeTab)}
                       >
-                        <Trash2 size={14} /> Delete
+                        <Trash2 size={14} /> {t('history.delete')}
                       </Button>
                     </div>
 
@@ -331,7 +342,7 @@ const History = () => {
                             <div className="grid sm:grid-cols-2 gap-5">
                               <div>
                                 <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold mb-2">
-                                  Symptoms
+                                  {t('history.symptoms')}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {item.symptoms?.map((s) => (
@@ -346,13 +357,13 @@ const History = () => {
                               </div>
                               <div>
                                 <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold mb-2">
-                                  Advice
+                                  {t('history.advice')}
                                 </p>
                                 <p className="text-sm text-[#3e4c5b]">
                                   {item.recommendations?.teleconsultationRecommended ||
                                   item.severity === 'High'
-                                    ? 'A consultation was recommended.'
-                                    : 'Follow the medication plan and monitor.'}
+                                    ? t('history.adviceConsultRecommended')
+                                    : t('history.adviceFollowPlan')}
                                 </p>
                               </div>
                             </div>
@@ -361,11 +372,11 @@ const History = () => {
                               <div>
                                 <div className="flex items-center justify-between mb-3">
                                   <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">
-                                    Recommended medicines
+                                    {t('history.recommendedMedicines')}
                                   </p>
                                   {item.recommendations.followUpDate && (
                                     <p className="text-xs text-[#0f766e] font-medium">
-                                      Follow up:{' '}
+                                      {t('history.followUpLabel')}{' '}
                                       {new Date(
                                         item.recommendations.followUpDate
                                       ).toLocaleDateString()}
@@ -396,7 +407,7 @@ const History = () => {
                             <div className="grid sm:grid-cols-2 gap-5">
                               <div className="bg-white border border-[#e6e2d6] rounded-xl p-4">
                                 <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold mb-2">
-                                  Safety concerns
+                                  {t('history.safetyConcerns')}
                                 </p>
                                 {item.safetyStatus?.issues?.length > 0 ? (
                                   <ul className="space-y-1 text-sm text-[#7f1d1d]">
@@ -405,23 +416,23 @@ const History = () => {
                                     ))}
                                   </ul>
                                 ) : (
-                                  <p className="text-sm text-[#16a34a]">No issues found.</p>
+                                  <p className="text-sm text-[#16a34a]">{t('history.noIssues')}</p>
                                 )}
                               </div>
                               <div className="bg-white border border-[#e6e2d6] rounded-xl p-4">
                                 <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold mb-2">
-                                  Details
+                                  {t('history.details')}
                                 </p>
                                 <p className="text-sm text-[#3e4c5b]">
-                                  Date:{' '}
+                                  {t('history.dateLabel')}{' '}
                                   <span className="text-[#0f1f2e]">
-                                    {item.extractedData?.date || 'Not detected'}
+                                    {item.extractedData?.date || t('prescription.notDetected')}
                                   </span>
                                 </p>
                                 <p className="text-sm text-[#3e4c5b] mt-1">
-                                  Doctor:{' '}
+                                  {t('history.doctorLabel')}{' '}
                                   <span className="text-[#0f1f2e]">
-                                    {item.extractedData?.doctorName || 'Not detected'}
+                                    {item.extractedData?.doctorName || t('prescription.notDetected')}
                                   </span>
                                 </p>
                               </div>
@@ -430,7 +441,7 @@ const History = () => {
                             {item.extractedData?.medicines?.length > 0 && (
                               <div>
                                 <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold mb-2">
-                                  Medicines
+                                  {t('history.medicines')}
                                 </p>
                                 <div className="space-y-2">
                                   {item.extractedData.medicines.map((med, i) => (
@@ -446,12 +457,12 @@ const History = () => {
                                       </div>
                                       {med.timing?.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5">
-                                          {med.timing.map((t, idx) => (
+                                          {med.timing.map((time, idx) => (
                                             <span
                                               key={idx}
                                               className="px-2.5 py-0.5 bg-[#d6f1ec] text-[#0f766e] rounded-full text-xs font-medium"
                                             >
-                                              {t}
+                                              {time}
                                             </span>
                                           ))}
                                         </div>
@@ -473,10 +484,10 @@ const History = () => {
             <Card className="p-16 text-center border-dashed">
               <Search size={40} className="mx-auto text-[#d4cfbf]" />
               <h3 className="mt-4 font-display text-xl font-semibold text-[#0f1f2e]">
-                No history yet
+                {t('history.noHistory')}
               </h3>
               <p className="mt-2 text-sm text-[#7b8593]">
-                Start a symptom check or upload a prescription to see records here.
+                {t('history.noHistoryHint')}
               </p>
             </Card>
           )}

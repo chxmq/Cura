@@ -132,11 +132,11 @@ const PrescriptionAnalyzer = () => {
                 <div className="relative z-0">
                   <img
                     src={preview}
-                    alt="Prescription preview"
+                    alt={t('prescription.altPreview')}
                     className="max-h-[360px] mx-auto rounded-xl border border-[#e6e2d6] shadow-[0_4px_16px_rgba(15,31,46,0.08)]"
                   />
-                  <p className="mt-4 text-sm font-medium text-[#0f766e]">Image ready</p>
-                  <p className="text-xs text-[#7b8593] mt-1">Click or drag again to replace</p>
+                  <p className="mt-4 text-sm font-medium text-[#0f766e]">{t('prescription.imageReady')}</p>
+                  <p className="text-xs text-[#7b8593] mt-1">{t('prescription.clickReplace')}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -163,7 +163,7 @@ const PrescriptionAnalyzer = () => {
               </Button>
               {preview && (
                 <Button type="button" variant="ghost" onClick={handleReset} size="lg">
-                  Discard
+                  {t('prescription.discard')}
                 </Button>
               )}
             </div>
@@ -179,12 +179,12 @@ const PrescriptionAnalyzer = () => {
               </div>
               <div className="flex-1">
                 <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">
-                  {isSafe ? 'Looks safe' : 'Heads up — review needed'}
+                  {isSafe ? t('prescription.safe') : t('prescription.headsUpReview')}
                 </h2>
                 <p className="text-sm text-[#3e4c5b] mt-1">
                   {isSafe
-                    ? 'Dosage and combinations passed our basic safety checks.'
-                    : 'We found something worth a closer look.'}
+                    ? t('prescription.looksSafeDesc')
+                    : t('prescription.reviewNeededDesc')}
                 </p>
                 {!isSafe && analysis.safetyStatus.issues?.length > 0 && (
                   <ul className="mt-4 space-y-1.5">
@@ -216,10 +216,13 @@ const PrescriptionAnalyzer = () => {
               <Card>
                 <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#e6e2d6]">
                   <h2 className="font-display text-xl font-semibold text-[#0f1f2e] flex items-center gap-2">
-                    <Pill className="text-[#0f766e]" size={20} /> Medicines we found
+                    <Pill className="text-[#0f766e]" size={20} /> {t('prescription.medicinesFound')}
                   </h2>
                   <span className="text-xs font-medium text-[#7b8593] bg-[#f0eee6] px-3 py-1 rounded-full">
-                    {analysis.extractedData.medicines.length} item{analysis.extractedData.medicines.length === 1 ? '' : 's'}
+                    {analysis.extractedData.medicines.length}{' '}
+                    {analysis.extractedData.medicines.length === 1
+                      ? t('prescription.item')
+                      : t('prescription.items')}
                   </span>
                 </div>
 
@@ -243,12 +246,12 @@ const PrescriptionAnalyzer = () => {
                         </div>
                         {medicine.timing?.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
-                            {medicine.timing.map((t, i) => (
+                            {medicine.timing.map((time, i) => (
                               <span
                                 key={i}
                                 className="px-2.5 py-1 bg-white border border-[#e6e2d6] rounded-full text-xs font-medium text-[#3e4c5b]"
                               >
-                                {t}
+                                {time}
                               </span>
                             ))}
                           </div>
@@ -263,20 +266,20 @@ const PrescriptionAnalyzer = () => {
             {/* Side rail */}
             <div className="space-y-4">
               <Card>
-                <h3 className="text-sm font-semibold text-[#0f1f2e]">Prescription details</h3>
+                <h3 className="text-sm font-semibold text-[#0f1f2e]">{t('prescription.prescriptionDetails')}</h3>
                 <div className="mt-4 space-y-3 text-sm">
                   <div>
-                    <p className="text-xs text-[#7b8593] uppercase tracking-wide">Doctor</p>
+                    <p className="text-xs text-[#7b8593] uppercase tracking-wide">{t('prescription.doctor')}</p>
                     <p className="font-medium text-[#0f1f2e] mt-0.5">
-                      {analysis.extractedData.doctorName || 'Not detected'}
+                      {analysis.extractedData.doctorName || t('prescription.notDetected')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-[#7b8593] uppercase tracking-wide">Date</p>
+                    <p className="text-xs text-[#7b8593] uppercase tracking-wide">{t('prescription.date')}</p>
                     <p className="font-medium text-[#0f1f2e] mt-0.5">
                       {analysis.extractedData.date
                         ? new Date(analysis.extractedData.date).toLocaleDateString()
-                        : 'Not detected'}
+                        : t('prescription.notDetected')}
                     </p>
                   </div>
                 </div>
@@ -284,10 +287,10 @@ const PrescriptionAnalyzer = () => {
 
               {isSafe ? (
                 <Card className="bg-[#d6f1ec]/40 border-[#0f766e]/20">
-                  <p className="text-xs uppercase tracking-wide text-[#0f766e] font-semibold">Step 4 · Final</p>
-                  <h3 className="text-sm font-semibold text-[#0f1f2e] mt-1">Pick up your medicines</h3>
+                  <p className="text-xs uppercase tracking-wide text-[#0f766e] font-semibold">{t('prescription.step4Final')}</p>
+                  <h3 className="text-sm font-semibold text-[#0f1f2e] mt-1">{t('prescription.pickUpMedicines')}</h3>
                   <p className="text-sm text-[#3e4c5b] mt-2">
-                    Find a pharmacy near you to fill the prescription.
+                    {t('prescription.pickUpDesc')}
                   </p>
                   <Button
                     variant="primary"
@@ -295,16 +298,16 @@ const PrescriptionAnalyzer = () => {
                     className="mt-4 w-full"
                     onClick={() => navigate('/care-near-me')}
                   >
-                    <MapPin size={14} /> Find pharmacies
+                    <MapPin size={14} /> {t('prescription.findPharmacies')}
                   </Button>
                 </Card>
               ) : (
                 <>
                   <Card className="bg-[#fef2f2] border-[#fecaca]">
-                    <p className="text-xs uppercase tracking-wide text-[#dc2626] font-semibold">Step 4 · Talk to someone first</p>
-                    <h3 className="text-sm font-semibold text-[#0f1f2e] mt-1">Don't fill this yet</h3>
+                    <p className="text-xs uppercase tracking-wide text-[#dc2626] font-semibold">{t('prescription.step4TalkFirst')}</p>
+                    <h3 className="text-sm font-semibold text-[#0f1f2e] mt-1">{t('prescription.dontFill')}</h3>
                     <p className="text-sm text-[#7f1d1d] mt-2">
-                      A clinician should review this prescription before you take anything.
+                      {t('prescription.dontFillDesc')}
                     </p>
                     <div className="space-y-2 mt-4">
                       <Button
@@ -313,7 +316,7 @@ const PrescriptionAnalyzer = () => {
                         className="w-full"
                         onClick={() => navigate('/teleconsultation')}
                       >
-                        Open health assistant <ArrowRight size={14} />
+                        {t('symptoms.openHealthAssistant')} <ArrowRight size={14} />
                       </Button>
                       <Button
                         variant="secondary"
@@ -321,15 +324,15 @@ const PrescriptionAnalyzer = () => {
                         className="w-full"
                         onClick={() => navigate('/care-near-me')}
                       >
-                        <MapPin size={14} /> Find a clinic instead
+                        <MapPin size={14} /> {t('prescription.findClinicInstead')}
                       </Button>
                     </div>
                   </Card>
 
                   <Card className="bg-[#f0eee6]/50 border-[#e6e2d6]">
-                    <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">After your consult</p>
+                    <p className="text-xs uppercase tracking-wide text-[#7b8593] font-semibold">{t('prescription.afterConsult')}</p>
                     <p className="text-sm text-[#3e4c5b] mt-2">
-                      Once a clinician approves, find a pharmacy to fill the prescription.
+                      {t('prescription.afterConsultDesc')}
                     </p>
                     <Button
                       variant="ghost"
@@ -337,14 +340,14 @@ const PrescriptionAnalyzer = () => {
                       className="mt-4 w-full"
                       onClick={() => navigate('/care-near-me')}
                     >
-                      <MapPin size={14} /> Pharmacies nearby
+                      <MapPin size={14} /> {t('prescription.pharmaciesNearby')}
                     </Button>
                   </Card>
                 </>
               )}
 
               <Button variant="ghost" className="w-full" onClick={handleReset}>
-                <RefreshCw size={14} /> Process new image
+                <RefreshCw size={14} /> {t('prescription.processNew')}
               </Button>
             </div>
           </div>

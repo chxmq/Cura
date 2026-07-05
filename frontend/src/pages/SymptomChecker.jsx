@@ -25,25 +25,66 @@ const STEPS = [
 ];
 
 const FOLLOW_UP_QUESTIONS = [
-  { key: 'feverAbove104', label: 'Has your fever gone above 104°F (40°C)?' },
-  { key: 'fatigueWeakness', label: 'Are you feeling unusually weak or fatigued?' },
-  { key: 'durationMoreThan3Days', label: 'Have symptoms lasted more than 3 days?' },
-  { key: 'takenOtherMedicine', label: 'Have you taken any other medication recently?' }
+  { key: 'feverAbove104', labelKey: 'symptoms.followUp.feverAbove104' },
+  { key: 'fatigueWeakness', labelKey: 'symptoms.followUp.fatigueWeakness' },
+  { key: 'durationMoreThan3Days', labelKey: 'symptoms.followUp.durationMoreThan3Days' },
+  { key: 'takenOtherMedicine', labelKey: 'symptoms.followUp.takenOtherMedicine' }
 ];
 
-const severityStyles = {
-  Mild: {
-    badge: 'bg-[#dcfce7] text-[#166534] border-[#bbf7d0]',
-    label: 'Mild — keep an eye on it'
-  },
-  Moderate: {
-    badge: 'bg-[#fef3c7] text-[#854d0e] border-[#fde68a]',
-    label: 'Moderate — consider a check-in'
-  },
-  High: {
-    badge: 'bg-[#fee2e2] text-[#991b1b] border-[#fecaca]',
-    label: 'High — please see a doctor soon'
-  }
+const SEX_OPTIONS = [
+  { value: 'Male', labelKey: 'symptoms.male' },
+  { value: 'Female', labelKey: 'symptoms.female' },
+  { value: 'Other', labelKey: 'symptoms.other' }
+];
+
+const YES_NO_OPTIONS = [
+  { value: 'Yes', labelKey: 'common.yes' },
+  { value: 'No', labelKey: 'common.no' }
+];
+
+const VOICE_ERROR_KEYS = {
+  'not-allowed': 'voice.notAllowed',
+  'service-not-allowed': 'voice.serviceNotAllowed',
+  'no-speech': 'voice.noSpeech',
+  'audio-capture': 'voice.audioCapture',
+  network: 'voice.network',
+  aborted: 'voice.aborted',
+  'bad-grammar': 'voice.badGrammar',
+  'language-not-supported': 'voice.languageNotSupported',
+  'start-failed': 'voice.startFailed'
+};
+
+const getSeverityStyle = (t, severity) => {
+  const styles = {
+    Mild: {
+      badge: 'bg-[#dcfce7] text-[#166534] border-[#bbf7d0]',
+      labelKey: 'symptoms.severity.mild'
+    },
+    Moderate: {
+      badge: 'bg-[#fef3c7] text-[#854d0e] border-[#fde68a]',
+      labelKey: 'symptoms.severity.moderate'
+    },
+    High: {
+      badge: 'bg-[#fee2e2] text-[#991b1b] border-[#fecaca]',
+      labelKey: 'symptoms.severity.high'
+    }
+  };
+  const style = styles[severity];
+  if (!style) return { badge: '', label: severity };
+  return { badge: style.badge, label: t(style.labelKey) };
+};
+
+const getSymptomLabel = (t, symptom) => {
+  const key = `symptoms.symptomNames.${symptom}`;
+  const translated = t(key);
+  return translated === key ? symptom : translated;
+};
+
+const getVoiceErrorMessage = (t, { code }) => {
+  const key = VOICE_ERROR_KEYS[code];
+  if (key) return t(key);
+  if (code) return t('voice.genericError', { code });
+  return t('symptoms.voiceError');
 };
 
 const SymptomChecker = () => {
@@ -119,10 +160,10 @@ const SymptomChecker = () => {
         setAnalysis(response.data);
         setStep(4);
       } else {
-        setError(response.error || 'We couldn\'t analyze your symptoms right now.');
+        setError(response.error || t('symptoms.analyzeFailed'));
       }
     } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Analysis service unavailable.';
+      const msg = err.response?.data?.error || err.message || t('symptoms.serviceUnavailable');
       setError(msg);
     } finally {
       setLoading(false);
@@ -176,9 +217,7 @@ const SymptomChecker = () => {
     // *before* the recognition silently fails.
     const permission = await checkMicrophonePermission();
     if (permission === 'denied') {
-      setError(
-        'Microphone is blocked for this site. Click the lock/camera icon next to the address bar and allow microphone access.'
-      );
+      setError(t('symptoms.micBlocked'));
       return;
     }
 
@@ -188,7 +227,7 @@ const SymptomChecker = () => {
       const stream = await navigator.mediaDevices?.getUserMedia?.({ audio: true });
       stream?.getTracks?.().forEach((track) => track.stop());
     } catch {
-      setError('Microphone access is required for voice input.');
+      setError(t('symptoms.micRequired'));
       return;
     }
 
@@ -200,8 +239,8 @@ const SymptomChecker = () => {
           setVoiceInput(transcript);
           applySymptomsFromText(transcript);
         },
-        onError: ({ message }) => {
-          setError(message);
+        onError: ({ code }) => {
+          setError(getVoiceErrorMessage(t, { code }));
           setIsListening(false);
         },
         onEnd: () => {
@@ -209,8 +248,8 @@ const SymptomChecker = () => {
           recognitionRef.current = null;
         }
       });
-    } catch (err) {
-      setError(err.message || 'Voice recognition isn\'t available.');
+    } catch {
+      setError(t('voice.notSupported'));
       setIsListening(false);
     }
   };
@@ -222,6 +261,8 @@ const SymptomChecker = () => {
     }
     setIsListening(false);
   };
+
+  const severityStyle = analysis ? getSeverityStyle(t, analysis.severity) : null;
 
   return (
     <div className="max-w-3xl mx-auto pb-12">
@@ -259,9 +300,9 @@ const SymptomChecker = () => {
         {step === 1 && (
           <div className="space-y-8">
             <div>
-              <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">A little about you</h2>
+              <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">{t('symptoms.aboutYou')}</h2>
               <p className="text-sm text-[#7b8593] mt-1">
-                Helps us calibrate severity. We don't share this with anyone.
+                {t('symptoms.aboutYouNote')}
               </p>
             </div>
 
@@ -269,27 +310,29 @@ const SymptomChecker = () => {
               <Input
                 label={t('symptoms.age')}
                 type="number"
-                placeholder="e.g. 28"
+                placeholder={t('symptoms.agePlaceholder')}
                 value={personalData.age}
                 onChange={(e) => setPersonalData({ ...personalData, age: e.target.value })}
                 required
               />
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-[#0f1f2e]">Sex</label>
+                <label className="block text-sm font-medium text-[#0f1f2e]">{t('symptoms.sex')}</label>
                 <select
                   value={personalData.sex}
                   onChange={(e) => setPersonalData({ ...personalData, sex: e.target.value })}
                   className="w-full px-4 py-3 bg-white border border-[#d4cfbf] rounded-xl text-[#0f1f2e] outline-none focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10 transition-all"
                 >
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
+                  {SEX_OPTIONS.map(({ value, labelKey }) => (
+                    <option key={value} value={value}>
+                      {t(labelKey)}
+                    </option>
+                  ))}
                 </select>
               </div>
               <Input
                 label={t('symptoms.weight')}
                 type="number"
-                placeholder="e.g. 70"
+                placeholder={t('symptoms.weightPlaceholder')}
                 value={personalData.weight}
                 onChange={(e) => setPersonalData({ ...personalData, weight: e.target.value })}
                 className="sm:col-span-2"
@@ -299,7 +342,7 @@ const SymptomChecker = () => {
 
             <div className="flex justify-end pt-2">
               <Button onClick={nextStep} size="lg">
-                Continue <ArrowRight size={16} />
+                {t('symptoms.continue')} <ArrowRight size={16} />
               </Button>
             </div>
           </div>
@@ -309,9 +352,9 @@ const SymptomChecker = () => {
         {step === 2 && (
           <div className="space-y-8">
             <div>
-              <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">What's bothering you?</h2>
+              <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">{t('symptoms.whatsBothering')}</h2>
               <p className="text-sm text-[#7b8593] mt-1">
-                Tap everything that applies. You can also speak — we'll match symptoms automatically.
+                {t('symptoms.whatsBotheringNote')}
               </p>
             </div>
 
@@ -330,7 +373,7 @@ const SymptomChecker = () => {
                     }`}
                   >
                     {selected && <Check size={14} className="inline-block mr-1.5 -mt-0.5" />}
-                    {symptom}
+                    {getSymptomLabel(t, symptom)}
                   </button>
                 );
               })}
@@ -339,9 +382,9 @@ const SymptomChecker = () => {
             <div className="bg-[#f0eee6] border border-[#e6e2d6] rounded-2xl p-5 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-[#0f1f2e]">Voice input</h3>
+                  <h3 className="text-sm font-semibold text-[#0f1f2e]">{t('symptoms.voiceInput')}</h3>
                   <p className="text-xs text-[#7b8593] mt-0.5">
-                    Try saying "I have a fever and a cough" — matched symptoms get added.
+                    {t('symptoms.voiceInputHint')}
                   </p>
                 </div>
                 {voiceSupported ? (
@@ -351,10 +394,18 @@ const SymptomChecker = () => {
                     size="sm"
                     onClick={isListening ? stopVoiceCapture : startVoiceCapture}
                   >
-                    {isListening ? <><MicOff size={14} /> Stop</> : <><Mic size={14} /> Start</>}
+                    {isListening ? (
+                      <>
+                        <MicOff size={14} /> {t('symptoms.voiceStop')}
+                      </>
+                    ) : (
+                      <>
+                        <Mic size={14} /> {t('symptoms.voiceStart')}
+                      </>
+                    )}
                   </Button>
                 ) : (
-                  <span className="text-xs text-[#7b8593]">Voice isn't supported in this browser.</span>
+                  <span className="text-xs text-[#7b8593]">{t('symptoms.voiceUnsupported')}</span>
                 )}
               </div>
               <textarea
@@ -364,7 +415,7 @@ const SymptomChecker = () => {
                   applySymptomsFromText(e.target.value);
                 }}
                 rows={2}
-                placeholder="Voice transcript will appear here, or type freely…"
+                placeholder={t('symptoms.textareaPlaceholder')}
                 className="w-full px-4 py-3 bg-white border border-[#d4cfbf] rounded-xl text-sm text-[#0f1f2e] focus:outline-none focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
               />
             </div>
@@ -374,7 +425,7 @@ const SymptomChecker = () => {
                 <ArrowLeft size={16} /> {t('symptoms.back')}
               </Button>
               <Button onClick={nextStep} size="lg">
-                Continue <ArrowRight size={16} />
+                {t('symptoms.continue')} <ArrowRight size={16} />
               </Button>
             </div>
           </div>
@@ -384,10 +435,7 @@ const SymptomChecker = () => {
         {step === 3 && (
           <div className="space-y-8">
             <div>
-              <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">A few more questions</h2>
-              <p className="text-sm text-[#7b8593] mt-1">
-                These help the model decide whether you need a doctor.
-              </p>
+              <h2 className="font-display text-2xl font-semibold text-[#0f1f2e]">{t('symptoms.stepFollowUp')}</h2>
             </div>
 
             <div className="space-y-3">
@@ -396,20 +444,20 @@ const SymptomChecker = () => {
                   key={q.key}
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#f0eee6]/60 border border-[#e6e2d6] rounded-2xl px-5 py-4"
                 >
-                  <span className="text-sm text-[#0f1f2e]">{q.label}</span>
+                  <span className="text-sm text-[#0f1f2e]">{t(q.labelKey)}</span>
                   <div className="flex gap-2 shrink-0">
-                    {['Yes', 'No'].map((opt) => (
+                    {YES_NO_OPTIONS.map(({ value, labelKey }) => (
                       <button
-                        key={opt}
+                        key={value}
                         type="button"
-                        onClick={() => setFollowUpAnswers({ ...followUpAnswers, [q.key]: opt })}
+                        onClick={() => setFollowUpAnswers({ ...followUpAnswers, [q.key]: value })}
                         className={`px-5 py-2 rounded-full text-sm font-medium border transition-all ${
-                          followUpAnswers[q.key] === opt
+                          followUpAnswers[q.key] === value
                             ? 'bg-[#0f766e] text-white border-[#0f766e]'
                             : 'bg-white text-[#3e4c5b] border-[#d4cfbf] hover:border-[#0f766e] hover:text-[#0f766e]'
                         }`}
                       >
-                        {opt}
+                        {t(labelKey)}
                       </button>
                     ))}
                   </div>
@@ -433,19 +481,19 @@ const SymptomChecker = () => {
           <div className="space-y-8 animate-slide-up">
             <div className="text-center space-y-3">
               <span
-                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium border ${severityStyles[analysis.severity]?.badge || ''}`}
+                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium border ${severityStyle?.badge || ''}`}
               >
                 <Stethoscope size={14} />
-                {severityStyles[analysis.severity]?.label || analysis.severity}
+                {severityStyle?.label || analysis.severity}
               </span>
               <h2 className="font-display text-3xl font-semibold text-[#0f1f2e]">
-                Here's what we recommend
+                {t('symptoms.resultRecommendTitle')}
               </h2>
               {analysis.mlPrediction && (
                 <p className="text-xs text-[#7b8593]">
-                  Predicted by{' '}
+                  {t('symptoms.predictedBy')}{' '}
                   <span className="font-semibold text-[#3e4c5b]">{analysis.mlPrediction.model}</span> ·{' '}
-                  confidence {(analysis.mlPrediction.confidence * 100).toFixed(1)}%
+                  {t('symptoms.confidence')} {(analysis.mlPrediction.confidence * 100).toFixed(1)}%
                 </p>
               )}
             </div>
@@ -453,7 +501,8 @@ const SymptomChecker = () => {
             {analysis.severity !== 'High' && analysis.recommendations.medicines?.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-[#0f766e] uppercase tracking-wide">
-                  <Sparkles size={13} /> {analysis.aiPowered ? 'AI-suggested combination' : 'Recommended combination'}
+                  <Sparkles size={13} />{' '}
+                  {analysis.aiPowered ? t('symptoms.aiSuggestedCombination') : t('symptoms.recommendedCombination')}
                 </div>
 
                 {analysis.aiRationale && (
@@ -478,12 +527,12 @@ const SymptomChecker = () => {
                     </div>
                     {med.timing && med.timing.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
-                        {med.timing.map((t, i) => (
+                        {med.timing.map((slot, i) => (
                           <span
                             key={i}
                             className="px-3 py-1 rounded-full bg-white border border-[#d4cfbf] text-xs font-medium text-[#3e4c5b]"
                           >
-                            {t}
+                            {slot}
                           </span>
                         ))}
                       </div>
@@ -494,7 +543,7 @@ const SymptomChecker = () => {
                 {analysis.aiWarnings?.length > 0 && (
                   <div className="bg-[#fef3c7]/60 border border-[#fde68a] rounded-2xl px-4 py-3">
                     <p className="flex items-center gap-2 text-xs font-semibold text-[#854d0e] uppercase tracking-wide mb-2">
-                      <AlertTriangle size={13} /> Safety notes
+                      <AlertTriangle size={13} /> {t('symptoms.safetyNotes')}
                     </p>
                     <ul className="space-y-1 text-sm text-[#7c5210]">
                       {analysis.aiWarnings.map((w, i) => (
@@ -512,21 +561,19 @@ const SymptomChecker = () => {
             {analysis.severity === 'High' && (
               <div className="bg-[#fef2f2] border border-[#fecaca] rounded-2xl px-5 py-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-[#991b1b]">
-                  <AlertTriangle size={15} /> No OTC suggestion this time
+                  <AlertTriangle size={15} /> {t('symptoms.noOtcSuggestion')}
                 </p>
                 <p className="text-sm text-[#7f1d1d] mt-1.5 leading-relaxed">
-                  Your symptoms look serious enough that we'd rather you talk to a clinician
-                  before taking anything new. Use the buttons below to book a consultation or
-                  find a hospital nearby.
+                  {t('symptoms.noOtcBody')}
                 </p>
               </div>
             )}
 
             <div className="grid sm:grid-cols-2 gap-4">
               <Card className="bg-[#f0eee6]/60 border-[#e6e2d6] p-5">
-                <p className="text-xs uppercase tracking-wide text-[#0f766e] font-semibold">Follow up</p>
+                <p className="text-xs uppercase tracking-wide text-[#0f766e] font-semibold">{t('common.followUp')}</p>
                 <p className="mt-2 text-[#0f1f2e] font-medium">
-                  Check in by{' '}
+                  {t('symptoms.followUpCheckIn')}{' '}
                   {new Date(analysis.recommendations.followUpDate).toLocaleDateString(undefined, {
                     weekday: 'short',
                     day: 'numeric',
@@ -534,7 +581,7 @@ const SymptomChecker = () => {
                   })}
                 </p>
                 <p className="mt-1 text-sm text-[#3e4c5b]">
-                  Re-evaluate if symptoms haven't improved by then.
+                  {t('symptoms.followUpReEvaluate')}
                 </p>
               </Card>
 
@@ -551,12 +598,12 @@ const SymptomChecker = () => {
                       analysis.severity === 'High' ? 'text-[#dc2626]' : 'text-[#0f766e]'
                     }`}
                   >
-                    {analysis.severity === 'High' ? 'See a doctor' : 'Optional consult'}
+                    {analysis.severity === 'High' ? t('symptoms.consultDoctor') : t('symptoms.optionalConsult')}
                   </p>
                   <p className="mt-2 text-[#0f1f2e] font-medium">
                     {analysis.severity === 'High'
-                      ? 'Book a consultation as soon as you can.'
-                      : 'Talk to a clinician if you\'re unsure.'}
+                      ? t('symptoms.bookConsultation')
+                      : t('symptoms.talkClinician')}
                   </p>
                   <Button
                     variant={analysis.severity === 'High' ? 'accent' : 'primary'}
@@ -564,7 +611,7 @@ const SymptomChecker = () => {
                     className="mt-4"
                     onClick={() => navigate('/teleconsultation')}
                   >
-                    Open health assistant <ArrowRight size={14} />
+                    {t('symptoms.openHealthAssistant')} <ArrowRight size={14} />
                   </Button>
                 </Card>
               )}
@@ -574,16 +621,16 @@ const SymptomChecker = () => {
               <Card className="bg-white border-[#fecaca] p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-[#0f1f2e]">Need someone in person?</p>
+                    <p className="font-semibold text-[#0f1f2e]">{t('symptoms.needInPerson')}</p>
                     <p className="text-sm text-[#3e4c5b]">
-                      Find clinics and hospitals around you, sorted by distance.
+                      {t('symptoms.findClinicsNearby')}
                     </p>
                   </div>
                   <Button
                     variant="secondary"
                     onClick={() => navigate('/care-near-me')}
                   >
-                    <MapPin size={14} /> Find nearby care
+                    <MapPin size={14} /> {t('symptoms.findNearbyCare')}
                   </Button>
                 </div>
               </Card>
@@ -591,7 +638,7 @@ const SymptomChecker = () => {
 
             <div className="pt-2 flex justify-center">
               <Button variant="ghost" onClick={handleReset}>
-                <RefreshCw size={14} /> Start over
+                <RefreshCw size={14} /> {t('symptoms.startOver')}
               </Button>
             </div>
           </div>

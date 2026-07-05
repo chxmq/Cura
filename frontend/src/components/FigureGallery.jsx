@@ -1,23 +1,38 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { X, ZoomIn } from 'lucide-react';
 import { API_BASE_URL } from '../utils/constants.js';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
-const FIGURES = [
-  { id: 'fig01_confusion_matrix', title: 'Confusion matrix', caption: 'KNN (k=7) on held-out test set with raw counts and row-normalised proportions.' },
-  { id: 'fig02_accuracy_vs_loss', title: 'Accuracy vs loss', caption: 'Training and validation accuracy and cross-entropy loss vs training-set size.' },
-  { id: 'fig03_roc_auc', title: 'ROC-AUC curves', caption: 'One-vs-rest ROC curves per care class with per-class AUC.' },
-  { id: 'fig04_kpi_suite', title: 'Validation KPIs', caption: 'Full macro-averaged KPI suite including F1, balanced accuracy, MCC, and likelihood ratios.' },
-  { id: 'fig05_model_comparison', title: 'Model comparison', caption: 'All candidate models (Naive Bayes, KNN, Decision Tree, Logistic Regression, Random Forest) across headline metrics.' },
-  { id: 'fig06_cross_validation', title: 'Cross-validation', caption: '5-fold vs 10-fold stratified CV mean accuracy with 95% confidence intervals.' },
-  { id: 'fig07_loocv_vs_stratified', title: 'LOOCV vs stratified', caption: 'Leave-one-out CV vs 10-fold stratified CV for the selected model.' },
-  { id: 'fig08_sota_comparison', title: 'State of the art', caption: 'Proposed model vs published text-based neural network baselines.' },
-  { id: 'fig09_significance_tests', title: 'Statistical analysis', caption: 'ANOVA, Friedman, Wilcoxon, McNemar, Cohen\'s d, and 95% confidence intervals.' }
+const FIGURE_IDS = [
+  'fig01_confusion_matrix',
+  'fig02_accuracy_vs_loss',
+  'fig03_roc_auc',
+  'fig04_kpi_suite',
+  'fig05_model_comparison',
+  'fig06_cross_validation',
+  'fig07_loocv_vs_stratified',
+  'fig08_sota_comparison',
+  'fig09_significance_tests'
 ];
 
 const figureUrl = (id) => `${API_BASE_URL.replace(/\/api$/, '')}/api/figures/${id}.png`;
 
 const FigureGallery = ({ title, description }) => {
+  const { t } = useLanguage();
   const [active, setActive] = useState(null);
+
+  const figures = useMemo(
+    () =>
+      FIGURE_IDS.map((id, index) => {
+        const num = String(index + 1).padStart(2, '0');
+        return {
+          id,
+          title: t(`analytics.fig${num}Title`),
+          caption: t(`analytics.fig${num}Caption`)
+        };
+      }),
+    [t]
+  );
 
   return (
     <>
@@ -25,7 +40,7 @@ const FigureGallery = ({ title, description }) => {
         <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">{title}</h2>
         {description && <p className="text-xs text-[#7b8593] mb-4">{description}</p>}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FIGURES.map((fig) => (
+          {figures.map((fig) => (
             <button
               key={fig.id}
               type="button"
@@ -68,7 +83,7 @@ const FigureGallery = ({ title, description }) => {
               type="button"
               onClick={() => setActive(null)}
               className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 border border-[#e6e2d6] hover:bg-[#f0eee6] transition-colors"
-              aria-label="Close"
+              aria-label={t('figures.close')}
             >
               <X size={18} />
             </button>

@@ -27,5 +27,10 @@ yarn-error.log*
 !datasets/symptoms_2025.xlsx
 eng.traineddata
 
-docs/
+docs/*
+!docs/figures/
+docs/figures/*
+!docs/figures/png/
+docs/figures/png/*
+!docs/figures/png/*.png
 scripts/

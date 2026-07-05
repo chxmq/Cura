@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { translate, SUPPORTED_LANGUAGES } from '../i18n/index.js';
 
 const STORAGE_KEY = 'cura_language';
@@ -19,6 +19,11 @@ export const LanguageProvider = ({ children }) => {
   }, []);
 
   const t = useCallback((key, params) => translate(locale, key, params), [locale]);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.title = translate(locale, 'app.title');
+  }, [locale]);
 
   const value = useMemo(() => ({ locale, setLocale, t, languages: SUPPORTED_LANGUAGES }), [locale, setLocale, t]);
 

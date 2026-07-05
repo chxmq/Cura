@@ -1,6 +1,9 @@
 import { AlertCircle, X } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 const ErrorMessage = ({ message, onDismiss }) => {
+  const { t } = useLanguage();
+
   if (!message) return null;
 
   return (
@@ -13,7 +16,7 @@ const ErrorMessage = ({ message, onDismiss }) => {
         <button
           onClick={onDismiss}
           className="text-[#9f1239] hover:text-[#7f1d1d] transition-colors shrink-0"
-          aria-label="Dismiss"
+          aria-label={t('common.dismiss')}
         >
           <X size={16} />
         </button>

@@ -19,16 +19,11 @@ const fmtP = (value) => {
   const n = Number(value);
   return n < 0.0001 ? n.toExponential(2) : n.toFixed(4);
 };
-const prettyModel = (name) =>
-  ({
-    naive_bayes: 'Naive Bayes',
-    knn_3: 'KNN (k=3)',
-    knn_5: 'KNN (k=5)',
-    knn_7: 'KNN (k=7)',
-    decision_tree: 'Decision Tree',
-    logistic_regression: 'Logistic Regression',
-    random_forest: 'Random Forest'
-  }[name] || name);
+const prettyModel = (name, t) => {
+  const key = `analytics.models.${name}`;
+  const label = t(key);
+  return label === key ? name : label;
+};
 
 const HeatmapGrid = ({ xLabels, yLabels, values }) => (
   <div className="w-full">
@@ -73,6 +68,7 @@ const FragmentRow = ({ rowLabel, rowValues }) => (
 );
 
 const SimpleLineChart = ({ series, width = 840, height = 300 }) => {
+  const { t } = useLanguage();
   const padding = 40;
   const innerW = width - padding * 2;
   const innerH = height - padding * 2;
@@ -105,7 +101,7 @@ const SimpleLineChart = ({ series, width = 840, height = 300 }) => {
           <path key={line.id} d={line.d} fill="none" stroke={line.color} strokeWidth="2.5" />
         ))}
         <text x={width / 2} y={height - 10} textAnchor="middle" fill="#7b8593" fontSize="11">
-          False positive rate
+          {t('analytics.falsePositiveRate')}
         </text>
         <text
           x={14}
@@ -115,7 +111,7 @@ const SimpleLineChart = ({ series, width = 840, height = 300 }) => {
           fontSize="11"
           transform={`rotate(-90, 14, ${height / 2})`}
         >
-          True positive rate
+          {t('analytics.truePositiveRate')}
         </text>
       </svg>
     </div>
@@ -151,6 +147,7 @@ const BarHistogram = ({ items }) => {
 };
 
 const TradeoffPlot = ({ items, width = 820, height = 300 }) => {
+  const { t } = useLanguage();
   const padding = 50;
   const maxComplexity = Math.max(...items.map((i) => i.complexityScore), 1);
   const maxAcc = Math.max(...items.map((i) => i.accuracy), 1);
@@ -179,7 +176,7 @@ const TradeoffPlot = ({ items, width = 820, height = 300 }) => {
           );
         })}
         <text x={width / 2} y={height - 14} textAnchor="middle" fill="#7b8593" fontSize="11">
-          Complexity score
+          {t('analytics.complexityScore')}
         </text>
         <text
           x={14}
@@ -189,37 +186,40 @@ const TradeoffPlot = ({ items, width = 820, height = 300 }) => {
           fontSize="11"
           transform={`rotate(-90, 14, ${height / 2})`}
         >
-          Accuracy
+          {t('analytics.accuracy')}
         </text>
       </svg>
     </div>
   );
 };
 
-const GraphTriples = ({ triples }) => (
+const GraphTriples = ({ triples }) => {
+  const { t } = useLanguage();
+  return (
   <div className="max-h-72 overflow-auto rounded-xl border border-[#e6e2d6]">
     <table className="w-full text-xs">
       <thead className="sticky top-0 bg-[#f0eee6]">
         <tr className="text-[#7b8593] uppercase tracking-wide text-[10px]">
-          <th className="p-3 text-left font-semibold">Subject</th>
-          <th className="p-3 text-left font-semibold">Predicate</th>
-          <th className="p-3 text-left font-semibold">Object</th>
-          <th className="p-3 text-right font-semibold">Weight</th>
+          <th className="p-3 text-left font-semibold">{t('analytics.table.subject')}</th>
+          <th className="p-3 text-left font-semibold">{t('analytics.table.predicate')}</th>
+          <th className="p-3 text-left font-semibold">{t('analytics.table.object')}</th>
+          <th className="p-3 text-right font-semibold">{t('analytics.table.weight')}</th>
         </tr>
       </thead>
       <tbody>
-        {triples.map((t, idx) => (
-          <tr key={`${t.subject}-${idx}`} className="border-t border-[#e6e2d6] text-[#0f1f2e]">
-            <td className="p-3">{t.subject}</td>
-            <td className="p-3 text-[#0f766e]">{t.predicate}</td>
-            <td className="p-3">{t.object}</td>
-            <td className="p-3 text-right text-[#7b8593]">{t.weight}</td>
+        {triples.map((triple, idx) => (
+          <tr key={`${triple.subject}-${idx}`} className="border-t border-[#e6e2d6] text-[#0f1f2e]">
+            <td className="p-3">{triple.subject}</td>
+            <td className="p-3 text-[#0f766e]">{triple.predicate}</td>
+            <td className="p-3">{triple.object}</td>
+            <td className="p-3 text-right text-[#7b8593]">{triple.weight}</td>
           </tr>
         ))}
       </tbody>
     </table>
   </div>
-);
+  );
+};
 
 const StatCard = ({ label, value }) => (
   <Card className="p-5">
@@ -230,6 +230,7 @@ const StatCard = ({ label, value }) => (
 
 // ── Confusion matrix (raw counts, row = actual, col = predicted) ──
 const ConfusionMatrix = ({ labels, matrix }) => {
+  const { t } = useLanguage();
   const max = Math.max(...matrix.flat(), 1);
   return (
     <div className="w-full">
@@ -238,11 +239,11 @@ const ConfusionMatrix = ({ labels, matrix }) => {
           <tr>
             <th className="p-2" />
             <th className="p-2 text-[10px] uppercase tracking-wide text-[#7b8593]" colSpan={labels.length}>
-              Predicted
+              {t('analytics.predicted')}
             </th>
           </tr>
           <tr>
-            <th className="p-2 text-left text-[10px] uppercase text-[#7b8593]">Actual</th>
+            <th className="p-2 text-left text-[10px] uppercase text-[#7b8593]">{t('analytics.actual')}</th>
             {labels.map((l) => (
               <th key={l} className="p-2 font-semibold text-[#3e4c5b] break-words">{l}</th>
             ))}
@@ -343,7 +344,9 @@ const KpiTable = ({ rows }) => (
 );
 
 // ── Significance test card ──
-const StatTestCard = ({ title, rows, significant }) => (
+const StatTestCard = ({ title, rows, significant }) => {
+  const { t } = useLanguage();
+  return (
   <div className="rounded-xl border border-[#e6e2d6] p-4 bg-white/40">
     <div className="flex items-center justify-between mb-2">
       <h3 className="font-display text-sm font-semibold text-[#0f1f2e]">{title}</h3>
@@ -353,7 +356,7 @@ const StatTestCard = ({ title, rows, significant }) => (
             significant ? 'bg-[#0f766e]/15 text-[#0f766e]' : 'bg-[#7b8593]/15 text-[#7b8593]'
           }`}
         >
-          {significant ? 'Significant (p<0.05)' : 'Not significant'}
+          {significant ? t('analytics.significant') : t('analytics.notSignificant')}
         </span>
       )}
     </div>
@@ -366,7 +369,8 @@ const StatTestCard = ({ title, rows, significant }) => (
       ))}
     </div>
   </div>
-);
+  );
+};
 
 const SimpleTable = ({ columns, rows }) => (
   <div className="rounded-xl border border-[#e6e2d6]">
@@ -406,18 +410,18 @@ const ModelAnalytics = () => {
       try {
         const res = await getSymptomModelMetrics();
         if (!res?.success) {
-          setError(res?.error || 'Couldn\'t load analytics.');
+          setError(res?.error || t('analytics.loadError'));
           return;
         }
         setMetrics(res.data);
       } catch (err) {
-        setError(err?.response?.data?.error || err?.message || 'Couldn\'t load analytics.');
+        setError(err?.response?.data?.error || err?.message || t('analytics.loadError'));
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, []);
+  }, [t]);
 
   const rocSeries = useMemo(() => {
     const perClass = metrics?.rocAucAnalysis?.perClass || {};
@@ -427,46 +431,46 @@ const ModelAnalytics = () => {
   const accuracyCurve = useMemo(() => {
     const points = metrics?.accuracyVsLoss?.points || [];
     return [
-      { id: 'Training accuracy', points: points.map((p) => ({ x: p.trainSize, y: p.trainAccuracy })) },
-      { id: 'Validation accuracy', points: points.map((p) => ({ x: p.trainSize, y: p.validationAccuracy })) }
+      { id: t('analytics.curves.trainingAccuracy'), points: points.map((p) => ({ x: p.trainSize, y: p.trainAccuracy })) },
+      { id: t('analytics.curves.validationAccuracy'), points: points.map((p) => ({ x: p.trainSize, y: p.validationAccuracy })) }
     ];
-  }, [metrics]);
+  }, [metrics, t]);
 
   const lossCurve = useMemo(() => {
     const points = metrics?.accuracyVsLoss?.points || [];
     return [
-      { id: 'Training loss', points: points.map((p) => ({ x: p.trainSize, y: p.trainLoss })) },
-      { id: 'Validation loss', points: points.map((p) => ({ x: p.trainSize, y: p.validationLoss })) }
+      { id: t('analytics.curves.trainingLoss'), points: points.map((p) => ({ x: p.trainSize, y: p.trainLoss })) },
+      { id: t('analytics.curves.validationLoss'), points: points.map((p) => ({ x: p.trainSize, y: p.validationLoss })) }
     ];
-  }, [metrics]);
+  }, [metrics, t]);
 
   const kpiRows = useMemo(() => {
     const m = metrics?.kpiReport?.macro;
     if (!m) return [];
     return [
-      { label: 'Accuracy Score', value: fmt(m.accuracyScore) },
-      { label: 'Precision (PPV)', value: fmt(m.precision) },
-      { label: 'True Positive Rate (Recall)', value: fmt(m.truePositiveRate) },
-      { label: 'True Negative Rate (Specificity)', value: fmt(m.trueNegativeRate) },
-      { label: 'False Positive Rate', value: fmt(m.falsePositiveRate) },
-      { label: 'False Negative Rate', value: fmt(m.falseNegativeRate) },
-      { label: 'False Discovery Rate', value: fmt(m.falseDiscoveryRate) },
-      { label: 'False Omission Rate', value: fmt(m.falseOmissionRate) },
-      { label: 'Negative Predictive Value', value: fmt(m.negativePredictiveValue) },
-      { label: 'F1 Score', value: fmt(m.f1Score) },
-      { label: 'Fowlkes–Mallows Index', value: fmt(m.fowlkesMallowsIndex) },
-      { label: 'Balanced Accuracy', value: fmt(m.balancedAccuracy) },
-      { label: 'Informedness (Youden J)', value: fmt(m.informedness) },
-      { label: 'Markedness', value: fmt(m.markedness) },
-      { label: 'Threat Score (CSI)', value: fmt(m.threatScore) },
-      { label: 'Matthews Corr. Coefficient', value: fmt(m.matthewsCorrelationCoefficient) },
-      { label: 'Prevalence', value: fmt(m.prevalence) },
-      { label: 'Positive Likelihood Ratio', value: fmt(m.positiveLikelihoodRatio, 3) },
-      { label: 'Negative Likelihood Ratio', value: fmt(m.negativeLikelihoodRatio, 3) },
-      { label: 'Diagnostic Odds Ratio', value: fmt(m.diagnosticOddsRatio, 2) },
-      { label: 'Model Training Time', value: `${fmt(metrics?.kpiReport?.modelTrainingTimeMs, 2)} ms` }
+      { label: t('analytics.kpi.accuracyScore'), value: fmt(m.accuracyScore) },
+      { label: t('analytics.kpi.precision'), value: fmt(m.precision) },
+      { label: t('analytics.kpi.recall'), value: fmt(m.truePositiveRate) },
+      { label: t('analytics.kpi.specificity'), value: fmt(m.trueNegativeRate) },
+      { label: t('analytics.kpi.fpr'), value: fmt(m.falsePositiveRate) },
+      { label: t('analytics.kpi.fnr'), value: fmt(m.falseNegativeRate) },
+      { label: t('analytics.kpi.fdr'), value: fmt(m.falseDiscoveryRate) },
+      { label: t('analytics.kpi.for'), value: fmt(m.falseOmissionRate) },
+      { label: t('analytics.kpi.npv'), value: fmt(m.negativePredictiveValue) },
+      { label: t('analytics.kpi.f1'), value: fmt(m.f1Score) },
+      { label: t('analytics.kpi.fmi'), value: fmt(m.fowlkesMallowsIndex) },
+      { label: t('analytics.kpi.balancedAccuracy'), value: fmt(m.balancedAccuracy) },
+      { label: t('analytics.kpi.informedness'), value: fmt(m.informedness) },
+      { label: t('analytics.kpi.markedness'), value: fmt(m.markedness) },
+      { label: t('analytics.kpi.threatScore'), value: fmt(m.threatScore) },
+      { label: t('analytics.kpi.mcc'), value: fmt(m.matthewsCorrelationCoefficient) },
+      { label: t('analytics.kpi.prevalence'), value: fmt(m.prevalence) },
+      { label: t('analytics.kpi.plr'), value: fmt(m.positiveLikelihoodRatio, 3) },
+      { label: t('analytics.kpi.nlr'), value: fmt(m.negativeLikelihoodRatio, 3) },
+      { label: t('analytics.kpi.dor'), value: fmt(m.diagnosticOddsRatio, 2) },
+      { label: t('analytics.kpi.trainingTime'), value: `${fmt(metrics?.kpiReport?.modelTrainingTimeMs, 2)} ms` }
     ];
-  }, [metrics]);
+  }, [metrics, t]);
 
   return (
     <div className="max-w-7xl mx-auto pb-12 space-y-6">
@@ -488,14 +492,14 @@ const ModelAnalytics = () => {
       ) : metrics && (
         <>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Selected model" value={metrics.selectedModelName} />
+            <StatCard label={t('analytics.selectedModel')} value={prettyModel(metrics.selectedModelName, t)} />
             <StatCard
-              label="Accuracy"
+              label={t('analytics.accuracy')}
               value={formatPct(metrics.datasetClassificationPerformance?.accuracy)}
             />
-            <StatCard label="Macro AUC" value={formatPct(metrics.rocAucAnalysis?.macroAuc)} />
+            <StatCard label={t('analytics.macroAuc')} value={formatPct(metrics.rocAucAnalysis?.macroAuc)} />
             <StatCard
-              label="ANOVA p-value"
+              label={t('analytics.anovaPValue')}
               value={Number(metrics.hypothesisTesting?.anova?.pValue || 0).toExponential(2)}
             />
           </div>
@@ -509,9 +513,9 @@ const ModelAnalytics = () => {
 
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
-              <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">Confusion matrix</h2>
+              <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">{t('analytics.confusionMatrix')}</h2>
               <p className="text-xs text-[#7b8593] mb-4">
-                Held-out test set · rows = actual, columns = predicted
+                {t('analytics.confusionMatrixDesc')}
               </p>
               <ConfusionMatrix
                 labels={metrics.datasetClassificationPerformance?.confusionMatrix?.labels || []}
@@ -521,10 +525,10 @@ const ModelAnalytics = () => {
 
             <Card>
               <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">
-                Model validation KPIs
+                {t('analytics.modelValidationKpis')}
               </h2>
               <p className="text-xs text-[#7b8593] mb-4">
-                Macro-averaged (one-vs-rest) over all care classes
+                {t('analytics.modelValidationKpisDesc')}
               </p>
               <KpiTable rows={kpiRows} />
             </Card>
@@ -532,7 +536,7 @@ const ModelAnalytics = () => {
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">
-              Accuracy vs loss
+              {t('analytics.accuracyVsLoss')}
             </h2>
             <p className="text-xs text-[#7b8593] mb-4">
               {metrics.accuracyVsLoss?.description}
@@ -540,21 +544,21 @@ const ModelAnalytics = () => {
             <div className="grid md:grid-cols-2 gap-6">
               <XYLineChart
                 series={accuracyCurve}
-                xLabel="Training set size"
-                yLabel="Accuracy"
+                xLabel={t('analytics.trainingSetSize')}
+                yLabel={t('analytics.accuracy')}
                 yMax={1}
               />
               <XYLineChart
                 series={lossCurve}
-                xLabel="Training set size"
-                yLabel="Cross-entropy loss"
+                xLabel={t('analytics.trainingSetSize')}
+                yLabel={t('analytics.crossEntropyLoss')}
               />
             </div>
           </Card>
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">
-              Comparative model metrics
+              {t('analytics.comparativeModelMetrics')}
             </h2>
             <HeatmapGrid
               xLabels={metrics.comparativeModelAnalysis?.heatmap?.xLabels || []}
@@ -564,7 +568,7 @@ const ModelAnalytics = () => {
           </Card>
 
           <Card>
-            <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">ROC curves</h2>
+            <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">{t('analytics.rocCurves')}</h2>
             <SimpleLineChart series={rocSeries} />
             <div className="flex flex-wrap gap-2 mt-4">
               {Object.entries(metrics.rocAucAnalysis?.perClass || {}).map(([label, data]) => (
@@ -581,14 +585,14 @@ const ModelAnalytics = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">
-                Class distribution
+                {t('analytics.classDistribution')}
               </h2>
               <BarHistogram items={metrics.comparativeModelAnalysis?.histogram?.careClassCounts || []} />
             </Card>
 
             <Card>
               <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">
-                Accuracy vs complexity
+                {t('analytics.accuracyVsComplexity')}
               </h2>
               <TradeoffPlot items={metrics.tradeOffAnalysis || []} />
             </Card>
@@ -596,7 +600,7 @@ const ModelAnalytics = () => {
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">
-              Feature correlation matrix
+              {t('analytics.featureCorrelationMatrix')}
             </h2>
             <HeatmapGrid
               xLabels={metrics.comparativeModelAnalysis?.correlationMatrix?.labels || []}
@@ -614,21 +618,21 @@ const ModelAnalytics = () => {
             <p className="text-xs text-[#7b8593] mb-4">{t('analytics.comparisonDesc')}</p>
             <SimpleTable
               columns={[
-                { key: 'model', label: 'Model' },
-                { key: 'accuracy', label: 'Acc', align: 'right' },
-                { key: 'precision', label: 'Prec', align: 'right' },
-                { key: 'recall', label: 'Recall', align: 'right' },
-                { key: 'f1', label: 'F1', align: 'right' },
-                { key: 'spec', label: 'Spec', align: 'right' },
-                { key: 'bal', label: 'BalAcc', align: 'right' },
-                { key: 'mcc', label: 'MCC', align: 'right' },
-                { key: 'fm', label: 'FM', align: 'right' },
-                { key: 'auc', label: 'AUC', align: 'right' },
-                { key: 'train', label: 'Train (ms)', align: 'right' }
+                { key: 'model', label: t('analytics.table.model') },
+                { key: 'accuracy', label: t('analytics.table.accuracy'), align: 'right' },
+                { key: 'precision', label: t('analytics.table.precision'), align: 'right' },
+                { key: 'recall', label: t('analytics.table.recall'), align: 'right' },
+                { key: 'f1', label: t('analytics.table.f1'), align: 'right' },
+                { key: 'spec', label: t('analytics.table.spec'), align: 'right' },
+                { key: 'bal', label: t('analytics.table.balAcc'), align: 'right' },
+                { key: 'mcc', label: t('analytics.table.mcc'), align: 'right' },
+                { key: 'fm', label: t('analytics.table.fm'), align: 'right' },
+                { key: 'auc', label: t('analytics.table.auc'), align: 'right' },
+                { key: 'train', label: t('analytics.table.trainMs'), align: 'right' }
               ]}
               rows={(metrics.comparativeModelAnalysis?.models || []).map((m) => ({
                 _highlight: m.model === metrics.selectedModelName,
-                model: prettyModel(m.model),
+                model: prettyModel(m.model, t),
                 accuracy: fmt(m.accuracy, 3),
                 precision: fmt(m.precision, 3),
                 recall: fmt(m.recall, 3),
@@ -645,25 +649,25 @@ const ModelAnalytics = () => {
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">
-              Cross-validation
+              {t('analytics.crossValidation')}
             </h2>
             <p className="text-xs text-[#7b8593] mb-4">
-              Mean fold accuracy ± 95% confidence interval
+              {t('analytics.crossValidationDesc')}
             </p>
             <div className="grid lg:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-[#7b8593] mb-2">
-                  {metrics.crossValidation?.kFold?.folds}-fold CV
+                  {t('analytics.foldCv', { folds: metrics.crossValidation?.kFold?.folds })}
                 </h3>
                 <SimpleTable
                   columns={[
-                    { key: 'model', label: 'Model' },
-                    { key: 'mean', label: 'Mean', align: 'right' },
-                    { key: 'ci', label: '95% CI', align: 'right' }
+                    { key: 'model', label: t('analytics.table.model') },
+                    { key: 'mean', label: t('analytics.table.mean'), align: 'right' },
+                    { key: 'ci', label: t('analytics.table.ci95'), align: 'right' }
                   ]}
                   rows={(metrics.crossValidation?.kFold?.perModel || []).map((m) => ({
                     _highlight: m.model === metrics.selectedModelName,
-                    model: prettyModel(m.model),
+                    model: prettyModel(m.model, t),
                     mean: formatPct(m.mean),
                     ci: `${formatPct(m.lower)} – ${formatPct(m.upper)}`
                   }))}
@@ -671,17 +675,17 @@ const ModelAnalytics = () => {
               </div>
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-[#7b8593] mb-2">
-                  {metrics.crossValidation?.stratifiedKFold?.folds}-fold stratified CV
+                  {t('analytics.foldStratifiedCv', { folds: metrics.crossValidation?.stratifiedKFold?.folds })}
                 </h3>
                 <SimpleTable
                   columns={[
-                    { key: 'model', label: 'Model' },
-                    { key: 'mean', label: 'Mean', align: 'right' },
-                    { key: 'ci', label: '95% CI', align: 'right' }
+                    { key: 'model', label: t('analytics.table.model') },
+                    { key: 'mean', label: t('analytics.table.mean'), align: 'right' },
+                    { key: 'ci', label: t('analytics.table.ci95'), align: 'right' }
                   ]}
                   rows={(metrics.crossValidation?.stratifiedKFold?.perModel || []).map((m) => ({
                     _highlight: m.model === metrics.selectedModelName,
-                    model: prettyModel(m.model),
+                    model: prettyModel(m.model, t),
                     mean: formatPct(m.mean),
                     ci: `${formatPct(m.lower)} – ${formatPct(m.upper)}`
                   }))}
@@ -691,95 +695,98 @@ const ModelAnalytics = () => {
 
             <div className="mt-6 grid sm:grid-cols-3 gap-4">
               <div className="rounded-xl border border-[#e6e2d6] p-4">
-                <p className="text-[10px] uppercase tracking-wide text-[#7b8593] font-semibold">LOOCV accuracy</p>
+                <p className="text-[10px] uppercase tracking-wide text-[#7b8593] font-semibold">{t('analytics.loocvAccuracy')}</p>
                 <p className="font-display text-2xl font-semibold text-[#0f1f2e] mt-1">
                   {formatPct(metrics.crossValidation?.loocv?.accuracy)}
                 </p>
                 <p className="text-[11px] text-[#7b8593] mt-1">
-                  {metrics.crossValidation?.loocv?.iterations} iterations
-                  {metrics.crossValidation?.loocv?.subsampled ? ' (subsampled)' : ''}
+                  {t('analytics.iterations', { count: metrics.crossValidation?.loocv?.iterations })}
+                  {metrics.crossValidation?.loocv?.subsampled ? ` ${t('analytics.subsampled')}` : ''}
                 </p>
               </div>
               <div className="rounded-xl border border-[#e6e2d6] p-4">
-                <p className="text-[10px] uppercase tracking-wide text-[#7b8593] font-semibold">Stratified k-fold accuracy</p>
+                <p className="text-[10px] uppercase tracking-wide text-[#7b8593] font-semibold">{t('analytics.stratifiedKFoldAccuracy')}</p>
                 <p className="font-display text-2xl font-semibold text-[#0f1f2e] mt-1">
                   {formatPct(metrics.crossValidation?.loocvVsStratified?.stratifiedKFoldAccuracy)}
                 </p>
                 <p className="text-[11px] text-[#7b8593] mt-1">
-                  Selected model · {prettyModel(metrics.selectedModelName)}
+                  {t('analytics.selectedModelLabel', { model: prettyModel(metrics.selectedModelName, t) })}
                 </p>
               </div>
               <div className="rounded-xl border border-[#e6e2d6] p-4">
-                <p className="text-[10px] uppercase tracking-wide text-[#7b8593] font-semibold">LOOCV vs stratified Δ</p>
+                <p className="text-[10px] uppercase tracking-wide text-[#7b8593] font-semibold">{t('analytics.loocvVsStratifiedDelta')}</p>
                 <p className="font-display text-2xl font-semibold text-[#0f1f2e] mt-1">
                   {formatPct(Math.abs(
                     (metrics.crossValidation?.loocvVsStratified?.stratifiedKFoldAccuracy || 0) -
                     (metrics.crossValidation?.loocv?.accuracy || 0)
                   ))}
                 </p>
-                <p className="text-[11px] text-[#7b8593] mt-1">Absolute accuracy difference</p>
+                <p className="text-[11px] text-[#7b8593] mt-1">{t('analytics.absoluteAccuracyDiff')}</p>
               </div>
             </div>
           </Card>
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-1">
-              Statistical significance analysis
+              {t('analytics.statisticalSignificance')}
             </h2>
             <p className="text-xs text-[#7b8593] mb-4">
-              Comparing {prettyModel(metrics.selectedModelName)} vs {prettyModel(metrics.runnerUpModelName)} (α = 0.05)
+              {t('analytics.statisticalSignificanceDesc', {
+                modelA: prettyModel(metrics.selectedModelName, t),
+                modelB: prettyModel(metrics.runnerUpModelName, t)
+              })}
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               <StatTestCard
-                title="ANOVA (one-way)"
+                title={t('analytics.tests.anova')}
                 significant={metrics.hypothesisTesting?.significanceSummary?.anovaSignificant}
                 rows={[
-                  { label: 'F-statistic', value: fmt(metrics.hypothesisTesting?.anova?.fStatistic, 3) },
-                  { label: 'p-value', value: fmtP(metrics.hypothesisTesting?.anova?.pValue) },
-                  { label: 'η² effect size', value: fmt(metrics.hypothesisTesting?.anova?.etaSquared, 3) }
+                  { label: t('analytics.tests.fStatistic'), value: fmt(metrics.hypothesisTesting?.anova?.fStatistic, 3) },
+                  { label: t('analytics.tests.pValue'), value: fmtP(metrics.hypothesisTesting?.anova?.pValue) },
+                  { label: t('analytics.tests.etaSquared'), value: fmt(metrics.hypothesisTesting?.anova?.etaSquared, 3) }
                 ]}
               />
               <StatTestCard
-                title="Friedman test"
+                title={t('analytics.tests.friedman')}
                 significant={metrics.hypothesisTesting?.significanceSummary?.friedmanSignificant}
                 rows={[
-                  { label: 'χ² statistic', value: fmt(metrics.hypothesisTesting?.friedman?.statistic, 3) },
-                  { label: 'df', value: metrics.hypothesisTesting?.friedman?.df ?? '—' },
-                  { label: 'p-value', value: fmtP(metrics.hypothesisTesting?.friedman?.pValue) }
+                  { label: t('analytics.tests.chiSquared'), value: fmt(metrics.hypothesisTesting?.friedman?.statistic, 3) },
+                  { label: t('analytics.tests.df'), value: metrics.hypothesisTesting?.friedman?.df ?? '—' },
+                  { label: t('analytics.tests.pValue'), value: fmtP(metrics.hypothesisTesting?.friedman?.pValue) }
                 ]}
               />
               <StatTestCard
-                title="Wilcoxon signed-rank"
+                title={t('analytics.tests.wilcoxon')}
                 significant={metrics.hypothesisTesting?.significanceSummary?.wilcoxonSignificant}
                 rows={[
-                  { label: 'W statistic', value: fmt(metrics.hypothesisTesting?.wilcoxonSignedRank?.statistic, 1) },
-                  { label: 'z-score', value: fmt(metrics.hypothesisTesting?.wilcoxonSignedRank?.zScore, 3) },
-                  { label: 'p-value', value: fmtP(metrics.hypothesisTesting?.wilcoxonSignedRank?.pValue) }
+                  { label: t('analytics.tests.wStatistic'), value: fmt(metrics.hypothesisTesting?.wilcoxonSignedRank?.statistic, 1) },
+                  { label: t('analytics.tests.zScore'), value: fmt(metrics.hypothesisTesting?.wilcoxonSignedRank?.zScore, 3) },
+                  { label: t('analytics.tests.pValue'), value: fmtP(metrics.hypothesisTesting?.wilcoxonSignedRank?.pValue) }
                 ]}
               />
               <StatTestCard
-                title="McNemar test"
+                title={t('analytics.tests.mcnemar')}
                 significant={metrics.hypothesisTesting?.significanceSummary?.mcnemarSignificant}
                 rows={[
-                  { label: 'χ² (corrected)', value: fmt(metrics.hypothesisTesting?.mcnemar?.statistic, 3) },
-                  { label: 'Discordant b / c', value: `${metrics.hypothesisTesting?.mcnemar?.discordantBcorrectA ?? '—'} / ${metrics.hypothesisTesting?.mcnemar?.discordantBcorrectB ?? '—'}` },
-                  { label: 'p-value', value: fmtP(metrics.hypothesisTesting?.mcnemar?.pValue) }
+                  { label: t('analytics.tests.chiSquaredCorrected'), value: fmt(metrics.hypothesisTesting?.mcnemar?.statistic, 3) },
+                  { label: t('analytics.tests.discordant'), value: `${metrics.hypothesisTesting?.mcnemar?.discordantBcorrectA ?? '—'} / ${metrics.hypothesisTesting?.mcnemar?.discordantBcorrectB ?? '—'}` },
+                  { label: t('analytics.tests.pValue'), value: fmtP(metrics.hypothesisTesting?.mcnemar?.pValue) }
                 ]}
               />
               <StatTestCard
-                title="Confidence intervals (95%)"
+                title={t('analytics.tests.confidenceIntervals')}
                 rows={[
-                  { label: 'Test accuracy (Wilson)', value: `${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.testAccuracyWilson95?.lower)} – ${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.testAccuracyWilson95?.upper)}` },
-                  { label: 'k-fold mean (t)', value: `${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.stratifiedKFoldMean95?.lower)} – ${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.stratifiedKFoldMean95?.upper)}` },
-                  { label: 'Std error', value: fmt(metrics.hypothesisTesting?.confidenceIntervals?.stratifiedKFoldMean95?.standardError, 4) }
+                  { label: t('analytics.tests.testAccuracyWilson'), value: `${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.testAccuracyWilson95?.lower)} – ${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.testAccuracyWilson95?.upper)}` },
+                  { label: t('analytics.tests.kFoldMean'), value: `${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.stratifiedKFoldMean95?.lower)} – ${formatPct(metrics.hypothesisTesting?.confidenceIntervals?.stratifiedKFoldMean95?.upper)}` },
+                  { label: t('analytics.tests.stdError'), value: fmt(metrics.hypothesisTesting?.confidenceIntervals?.stratifiedKFoldMean95?.standardError, 4) }
                 ]}
               />
               <StatTestCard
-                title="Effect size"
+                title={t('analytics.tests.effectSize')}
                 rows={[
-                  { label: "Cohen's d", value: fmt(metrics.hypothesisTesting?.effectSize?.pairwiseCohensD?.cohensD, 3) },
-                  { label: 'Magnitude', value: metrics.hypothesisTesting?.effectSize?.pairwiseCohensD?.magnitude ?? '—' },
-                  { label: 'ANOVA η²', value: fmt(metrics.hypothesisTesting?.effectSize?.anovaEtaSquared, 3) }
+                  { label: t('analytics.tests.cohensD'), value: fmt(metrics.hypothesisTesting?.effectSize?.pairwiseCohensD?.cohensD, 3) },
+                  { label: t('analytics.tests.magnitude'), value: metrics.hypothesisTesting?.effectSize?.pairwiseCohensD?.magnitude ?? '—' },
+                  { label: t('analytics.tests.anovaEtaSquared'), value: fmt(metrics.hypothesisTesting?.effectSize?.anovaEtaSquared, 3) }
                 ]}
               />
             </div>
@@ -792,20 +799,20 @@ const ModelAnalytics = () => {
             <p className="text-xs text-[#7b8593] mb-4">{t('analytics.sotaDesc')}</p>
             <SimpleTable
               columns={[
-                { key: 'model', label: 'Model' },
-                { key: 'arch', label: 'Architecture' },
-                { key: 'year', label: 'Year', align: 'right' },
-                { key: 'acc', label: 'Accuracy', align: 'right' },
-                { key: 'f1', label: 'F1', align: 'right' },
-                { key: 'bal', label: 'BalAcc', align: 'right' },
-                { key: 'mcc', label: 'MCC', align: 'right' },
-                { key: 'auc', label: 'AUC', align: 'right' },
-                { key: 'ref', label: 'Reference' }
+                { key: 'model', label: t('analytics.table.model') },
+                { key: 'arch', label: t('analytics.table.architecture') },
+                { key: 'year', label: t('analytics.table.year'), align: 'right' },
+                { key: 'acc', label: t('analytics.accuracy'), align: 'right' },
+                { key: 'f1', label: t('analytics.table.f1'), align: 'right' },
+                { key: 'bal', label: t('analytics.table.balAcc'), align: 'right' },
+                { key: 'mcc', label: t('analytics.table.mcc'), align: 'right' },
+                { key: 'auc', label: t('analytics.table.auc'), align: 'right' },
+                { key: 'ref', label: t('analytics.table.reference') }
               ]}
               rows={[
                 {
                   _highlight: true,
-                  model: `${prettyModel(metrics.stateOfTheArtComparison?.ours?.model)} (ours)`,
+                  model: `${prettyModel(metrics.stateOfTheArtComparison?.ours?.model, t)} ${t('analytics.table.ours')}`,
                   arch: metrics.stateOfTheArtComparison?.ours?.architecture,
                   year: metrics.stateOfTheArtComparison?.ours?.year,
                   acc: formatPct(metrics.stateOfTheArtComparison?.ours?.accuracy),
@@ -813,10 +820,10 @@ const ModelAnalytics = () => {
                   bal: '—',
                   mcc: '—',
                   auc: '—',
-                  ref: 'Selected model'
+                  ref: t('analytics.table.selectedModelRef')
                 },
                 ...(metrics.stateOfTheArtComparison?.trainedOnDataset || []).map((b) => ({
-                  model: prettyModel(b.model),
+                  model: prettyModel(b.model, t),
                   arch: b.architecture,
                   year: b.year,
                   acc: formatPct(b.accuracy),
@@ -840,13 +847,13 @@ const ModelAnalytics = () => {
               ]}
             />
             <p className="text-[11px] text-[#7b8593] mt-3">
-              Baseline figures are reported on different datasets and are provided for contextual reference only — not a like-for-like benchmark.
+              {t('analytics.sotaBaselineNote')}
             </p>
           </Card>
 
           <Card>
             <h2 className="font-display text-lg font-semibold text-[#0f1f2e] mb-4">
-              Healthcare knowledge graph
+              {t('analytics.healthcareKnowledgeGraph')}
             </h2>
             <GraphTriples triples={metrics.healthcareKnowledgeGraph?.triples || []} />
           </Card>

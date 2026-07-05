@@ -18,6 +18,14 @@ const errorHandler = (err, req, res, next) => {
     message = 'Duplicate field value entered';
   }
 
+  // Multer upload errors
+  if (err.name === 'MulterError') {
+    statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+    message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'File too large'
+      : err.message || 'Invalid upload';
+  }
+
   // JWT errors
   if (err.name === 'JsonWebTokenError') {
     statusCode = 401;

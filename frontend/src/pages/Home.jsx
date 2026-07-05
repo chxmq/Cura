@@ -32,27 +32,27 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 // ────────────────────────────────────────────────────────────────────
 // Hero mockup cards — three layered floating panels
 // ────────────────────────────────────────────────────────────────────
-const SeverityResultCard = () => (
+const SeverityResultCard = ({ t }) => (
   <div className="bg-white border border-[#e6e2d6] rounded-3xl shadow-[0_4px_12px_rgba(15,31,46,0.04),0_24px_60px_rgba(15,31,46,0.10)] p-5 sm:p-6 space-y-4 w-full">
     <div className="flex items-center justify-between">
       <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[#dcfce7] text-[#166534]">
         <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a] animate-pulse" />
-        Mild — keep an eye on it
+        {t('home.mockSeverityMild')}
       </span>
-      <span className="text-[10px] text-[#7b8593] font-medium font-mono">live</span>
+      <span className="text-[10px] text-[#7b8593] font-medium font-mono">{t('home.mockLive')}</span>
     </div>
 
     <div>
       <p className="font-display text-lg font-semibold text-[#0f1f2e] leading-snug">
-        Here's what we recommend
+        {t('home.mockRecommendTitle')}
       </p>
       <p className="text-xs text-[#7b8593] mt-0.5">
-        knn_7 · confidence 94.2%
+        {t('home.mockModelConfidence')}
       </p>
     </div>
 
     <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0f766e] uppercase tracking-wide">
-      <Sparkles size={12} /> AI-suggested combination
+      <Sparkles size={12} /> {t('home.mockAiSuggested')}
     </div>
 
     <div className="space-y-2">
@@ -75,57 +75,57 @@ const SeverityResultCard = () => (
     <div className="flex items-center justify-between pt-3 border-t border-[#e6e2d6]">
       <p className="flex items-center gap-1.5 text-xs text-[#3e4c5b]">
         <Calendar size={12} className="text-[#0f766e]" />
-        Follow up <span className="font-semibold text-[#0f1f2e]">May 3</span>
+        {t('home.mockFollowUp')} <span className="font-semibold text-[#0f1f2e]">May 3</span>
       </p>
       <span className="text-xs font-semibold text-[#0f766e] flex items-center gap-1">
-        <CheckCircle2 size={12} /> Saved
+        <CheckCircle2 size={12} /> {t('home.mockSaved')}
       </span>
     </div>
   </div>
 );
 
-const PrescriptionCard = () => (
+const PrescriptionCard = ({ t }) => (
   <div className="bg-white border border-[#e6e2d6] rounded-3xl shadow-[0_4px_12px_rgba(15,31,46,0.04),0_18px_40px_rgba(15,31,46,0.08)] p-5 w-full">
     <div className="flex items-center gap-3 mb-4">
       <div className="w-10 h-10 rounded-xl bg-[#fde8e1] text-[#c2410c] flex items-center justify-center">
         <FileText size={18} />
       </div>
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#c2410c] font-semibold">Prescription</p>
-        <p className="font-semibold text-sm text-[#0f1f2e]">Safety check</p>
+        <p className="text-[10px] uppercase tracking-wider text-[#c2410c] font-semibold">{t('home.mockPrescriptionLabel')}</p>
+        <p className="font-semibold text-sm text-[#0f1f2e]">{t('home.mockSafetyCheck')}</p>
       </div>
     </div>
     <div className="space-y-2">
       <div className="flex items-center gap-2 text-xs">
         <CheckCircle2 size={13} className="text-[#16a34a]" />
-        <span className="text-[#3e4c5b]">Dosage within limits</span>
+        <span className="text-[#3e4c5b]">{t('home.mockDosageOk')}</span>
       </div>
       <div className="flex items-center gap-2 text-xs">
         <CheckCircle2 size={13} className="text-[#16a34a]" />
-        <span className="text-[#3e4c5b]">No drug interactions</span>
+        <span className="text-[#3e4c5b]">{t('home.mockNoInteractions')}</span>
       </div>
       <div className="flex items-center gap-2 text-xs">
         <CheckCircle2 size={13} className="text-[#16a34a]" />
-        <span className="text-[#3e4c5b]">Timing valid</span>
+        <span className="text-[#3e4c5b]">{t('home.mockTimingValid')}</span>
       </div>
     </div>
   </div>
 );
 
-const ChatCard = () => (
+const ChatCard = ({ t }) => (
   <div className="bg-white border border-[#e6e2d6] rounded-3xl shadow-[0_4px_12px_rgba(15,31,46,0.04),0_18px_40px_rgba(15,31,46,0.08)] p-4 w-full space-y-2">
     <div className="flex items-center gap-2 mb-1">
       <div className="w-7 h-7 rounded-lg bg-[#e0f2fe] text-[#0369a1] flex items-center justify-center">
         <MessageSquareHeart size={14} />
       </div>
-      <p className="text-[10px] uppercase tracking-wider text-[#0369a1] font-semibold">Doctor</p>
+      <p className="text-[10px] uppercase tracking-wider text-[#0369a1] font-semibold">{t('home.mockDoctor')}</p>
     </div>
     <p className="text-xs text-[#0f1f2e] leading-relaxed bg-[#f0eee6]/60 rounded-xl px-3 py-2">
-      Based on what you're describing, hydration and rest are the priority.
+      {t('home.mockDoctorAdvice')}
     </p>
     <div className="flex items-center gap-1 text-[10px] text-[#7b8593]">
       <Sparkles size={10} className="text-[#0f766e]" />
-      <span>Source 1: Common Cold protocol</span>
+      <span>{t('home.mockSource')}</span>
     </div>
   </div>
 );
@@ -133,13 +133,13 @@ const ChatCard = () => (
 // ────────────────────────────────────────────────────────────────────
 // Live "thinking" demo — auto-plays a tiny inference animation
 // ────────────────────────────────────────────────────────────────────
-const LiveDemo = () => {
+const LiveDemo = ({ t }) => {
   const [step, setStep] = useState(0);
   const steps = [
-    { label: 'You', text: 'I have fever and cough.', color: 'teal' },
-    { label: 'ML model', text: 'Predicted care path: consult_doctor (conf. 87%)', color: 'navy' },
-    { label: 'Severity', text: 'Moderate — based on flowchart rules', color: 'amber' },
-    { label: 'Gemini', text: 'Suggested: Paracetamol 500mg + warm fluids + rest. Watch for breathing changes.', color: 'teal' }
+    { labelKey: 'home.liveDemoYou', textKey: 'home.liveDemoYouText', color: 'teal' },
+    { labelKey: 'home.liveDemoMl', textKey: 'home.liveDemoMlText', color: 'navy' },
+    { labelKey: 'home.liveDemoSeverity', textKey: 'home.liveDemoSeverityText', color: 'amber' },
+    { labelKey: 'home.liveDemoGemini', textKey: 'home.liveDemoGeminiText', color: 'teal' }
   ];
 
   useEffect(() => {
@@ -155,9 +155,9 @@ const LiveDemo = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse" />
-          <span className="text-xs font-semibold text-[#7b8593] uppercase tracking-wider">Live trace</span>
+          <span className="text-xs font-semibold text-[#7b8593] uppercase tracking-wider">{t('home.liveTrace')}</span>
         </div>
-        <span className="text-[10px] text-[#9aa3b1] font-mono">replays every ~9s</span>
+        <span className="text-[10px] text-[#9aa3b1] font-mono">{t('home.replaysEvery')}</span>
       </div>
 
       <div className="space-y-3 min-h-[280px]">
@@ -178,9 +178,9 @@ const LiveDemo = () => {
               }}
             >
               <span className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${colorMap[s.color]}`}>
-                {s.label}
+                {t(s.labelKey)}
               </span>
-              <p className="text-sm text-[#0f1f2e] leading-relaxed pt-1">{s.text}</p>
+              <p className="text-sm text-[#0f1f2e] leading-relaxed pt-1">{t(s.textKey)}</p>
             </div>
           );
         })}
@@ -253,11 +253,8 @@ const Home = () => {
                   {t('home.tagline').split(',')[0]},
                 </span>
                 <span className="block text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
-                  {t('home.tagline').includes('care') ? (
-                    <>with <span className="text-gradient">care.</span></>
-                  ) : (
-                    <span className="text-gradient">{t('home.tagline').split(',').slice(1).join(',').trim()}</span>
-                  )}
+                  {t('home.taglineWith')}{' '}
+                  <span className="text-gradient">{t('home.taglineHighlight')}</span>
                 </span>
               </h1>
 
@@ -300,15 +297,15 @@ const Home = () => {
                   <div className="absolute -top-3 -left-3 w-10 h-10 rounded-xl bg-[#fde8e1] flex items-center justify-center -rotate-6 shadow-[0_4px_12px_rgba(231,111,81,0.22)] z-10 animate-pulse">
                     <Heart size={16} className="text-[#e76f51]" />
                   </div>
-                  <SeverityResultCard />
+                  <SeverityResultCard t={t} />
                 </div>
               </ScrollReveal>
               <div className="flex gap-4 w-full max-w-[360px] hidden sm:flex">
                 <ScrollReveal direction="up" delay={300} className="flex-1">
-                  <PrescriptionCard />
+                  <PrescriptionCard t={t} />
                 </ScrollReveal>
                 <ScrollReveal direction="up" delay={450} className="flex-1">
-                  <ChatCard />
+                  <ChatCard t={t} />
                 </ScrollReveal>
               </div>
             </div>
@@ -323,27 +320,27 @@ const Home = () => {
             <div className="bg-white border border-[#e6e2d6] rounded-3xl px-6 sm:px-12 py-10 sm:py-12">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
                 {[
-                  { value: 94.85, suffix: '%', decimals: 2, label: 'Accuracy', icon: Activity, hint: '94.85% on a 3-class test set' },
-                  { value: 89.79, suffix: '%', decimals: 2, label: 'Macro F1', icon: TrendingUp, hint: 'Honest score on imbalanced data' },
-                  { value: 3880, suffix: '', decimals: 0, label: 'Training samples', icon: Brain, hint: '80/20 train/test split' },
-                  { value: 0.74, suffix: 'ms', decimals: 2, label: 'Avg. inference', icon: Zap, hint: 'KNN-7 lookup time' }
-                ].map(({ value, suffix, decimals, label, icon: Icon, hint }) => (
-                  <div key={label} className="text-center sm:text-left">
+                  { value: 94.85, suffix: '%', decimals: 2, labelKey: 'home.accuracy', hintKey: 'home.accuracyHint', icon: Activity },
+                  { value: 89.79, suffix: '%', decimals: 2, labelKey: 'home.macroF1', hintKey: 'home.macroF1Hint', icon: TrendingUp },
+                  { value: 3880, suffix: '', decimals: 0, labelKey: 'home.trainingSamples', hintKey: 'home.trainingSamplesHint', icon: Brain },
+                  { value: 0.74, suffix: 'ms', decimals: 2, labelKey: 'home.avgInference', hintKey: 'home.avgInferenceHint', icon: Zap }
+                ].map(({ value, suffix, decimals, labelKey, icon: Icon, hintKey }) => (
+                  <div key={labelKey} className="text-center sm:text-left">
                     <div className="inline-flex items-center gap-2 text-[#0f766e] mb-2">
                       <Icon size={16} />
                     </div>
                     <p className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#0f1f2e] tracking-tight tabular-nums">
                       <AnimatedNumber value={value} suffix={suffix} decimals={decimals} />
                     </p>
-                    <p className="text-sm text-[#7b8593] mt-1">{label}</p>
-                    <p className="text-[10px] text-[#9aa3b1] mt-0.5 hidden sm:block">{hint}</p>
+                    <p className="text-sm text-[#7b8593] mt-1">{t(labelKey)}</p>
+                    <p className="text-[10px] text-[#9aa3b1] mt-0.5 hidden sm:block">{t(hintKey)}</p>
                   </div>
                 ))}
               </div>
               <p className="text-xs text-[#9aa3b1] mt-8 text-center sm:text-left">
-                Live numbers from the KNN-7 classifier. Full evaluation in{' '}
+                {t('home.statsFootnote')}{' '}
                 <Link to="/analytics" className="text-[#0f766e] hover:text-[#115e59] font-medium underline-offset-4 hover:underline">
-                  Analytics →
+                  {t('home.statsAnalyticsLink')}
                 </Link>
               </p>
             </div>
@@ -356,20 +353,20 @@ const Home = () => {
         <ScrollReveal>
           <div className="text-center max-w-2xl mx-auto">
             <p className="text-xs font-semibold text-[#0f766e] uppercase tracking-wider">
-              Behind the curtain
+              {t('home.behindCurtain')}
             </p>
             <h2 className="mt-2 font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-              See Cura think.
+              {t('home.seeCuraThink')}
             </h2>
             <p className="mt-4 text-lg text-[#3e4c5b]">
-              Every symptom check runs through the same trace. Here it is, replaying live.
+              {t('home.liveDemoSubtitle')}
             </p>
           </div>
         </ScrollReveal>
 
         <ScrollReveal delay={120}>
           <div className="max-w-3xl mx-auto">
-            <LiveDemo />
+            <LiveDemo t={t} />
           </div>
         </ScrollReveal>
       </section>
@@ -379,13 +376,13 @@ const Home = () => {
         <ScrollReveal>
           <div className="text-center max-w-2xl mx-auto">
             <p className="text-xs font-semibold text-[#0f766e] uppercase tracking-wider">
-              What's in the box
+              {t('home.whatsInBox')}
             </p>
             <h2 className="mt-2 font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-              Everything the diagram asks for.
+              {t('home.bentoTitle')}
             </h2>
             <p className="mt-4 text-lg text-[#3e4c5b]">
-              Two flows, four AI surfaces, one calm interface.
+              {t('home.bentoSubtitle')}
             </p>
           </div>
         </ScrollReveal>
@@ -395,8 +392,8 @@ const Home = () => {
           <ScrollReveal delay={50} className="md:col-span-2">
             <BentoCard
               icon={Camera}
-              title="Read any prescription"
-              description="Snap a photo — Gemini Vision extracts every medicine, dose, and timing. Then we run a safety pass for dosage limits and drug interactions."
+              title={t('home.featureReadPrescription')}
+              description={t('home.featureReadPrescriptionDesc')}
               accent="coral"
             >
               <div className="mt-5 flex flex-wrap gap-2 text-[10px] font-medium">
@@ -413,8 +410,8 @@ const Home = () => {
           <ScrollReveal delay={120}>
             <BentoCard
               icon={Stethoscope}
-              title="Decode symptoms"
-              description="A trained ML classifier + Gemini drug suggestions, gated by deterministic safety rules."
+              title={t('home.featureDecodeSymptoms')}
+              description={t('home.featureDecodeSymptomsDesc')}
               accent="teal"
             />
           </ScrollReveal>
@@ -422,8 +419,8 @@ const Home = () => {
           <ScrollReveal delay={190}>
             <BentoCard
               icon={MessageSquareHeart}
-              title="Talk to an AI doctor"
-              description="Live HeyGen avatar grounded in a medical RAG pipeline."
+              title={t('home.featureTalkDoctor')}
+              description={t('home.featureTalkDoctorDesc')}
               accent="sky"
             />
           </ScrollReveal>
@@ -431,8 +428,8 @@ const Home = () => {
           <ScrollReveal delay={260}>
             <BentoCard
               icon={MapPin}
-              title="Find care nearby"
-              description="OpenStreetMap-powered locator for hospitals, clinics, and pharmacies."
+              title={t('home.featureFindCare')}
+              description={t('home.featureFindCareDesc')}
               accent="violet"
             />
           </ScrollReveal>
@@ -456,10 +453,10 @@ const Home = () => {
           <div className="relative">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <p className="text-xs font-semibold text-[#0f766e] uppercase tracking-wider">
-                Honest by design
+                {t('home.honestByDesign')}
               </p>
               <h2 className="mt-2 font-display text-4xl sm:text-5xl font-semibold text-[#0f1f2e] tracking-tight">
-                No magic. Just thoughtful product.
+                {t('home.honestyTitle')}
               </h2>
             </div>
 
@@ -467,26 +464,26 @@ const Home = () => {
               {[
                 {
                   icon: CheckCircle2,
-                  title: 'What we do',
-                  body: 'Classify severity from a real ML model. Suggest OTC combinations with Gemini. Flag clearly when you need a doctor.'
+                  titleKey: 'home.honestyWhatWeDoTitle',
+                  bodyKey: 'home.honestyWhatWeDoBody'
                 },
                 {
                   icon: Activity,
-                  title: 'How we do it',
-                  body: 'Naive Bayes, KNN, Decision Tree, Logistic Regression, and Random Forest trained on a 3,880-row labelled dataset. Gemini 2.5 Flash for vision, language, and cloud speech-to-text. LangChain RAG for the assistant.'
+                  titleKey: 'home.honestyHowWeDoTitle',
+                  bodyKey: 'home.honestyHowWeDoBody'
                 },
                 {
                   icon: Lock,
-                  title: 'What we don\'t do',
-                  body: 'Replace your doctor. We surface model confidence on every prediction so you can decide how much to trust each answer.'
+                  titleKey: 'home.honestyWhatWeDontTitle',
+                  bodyKey: 'home.honestyWhatWeDontBody'
                 }
-              ].map(({ icon: Icon, title, body }) => (
-                <div key={title}>
+              ].map(({ icon: Icon, titleKey, bodyKey }) => (
+                <div key={titleKey}>
                   <div className="w-12 h-12 rounded-2xl bg-[#d6f1ec] text-[#0f766e] flex items-center justify-center mb-5">
                     <Icon size={22} />
                   </div>
-                  <h3 className="font-display text-2xl font-semibold text-[#0f1f2e] tracking-tight">{title}</h3>
-                  <p className="mt-3 text-[#3e4c5b] leading-relaxed">{body}</p>
+                  <h3 className="font-display text-2xl font-semibold text-[#0f1f2e] tracking-tight">{t(titleKey)}</h3>
+                  <p className="mt-3 text-[#3e4c5b] leading-relaxed">{t(bodyKey)}</p>
                 </div>
               ))}
             </div>
@@ -533,15 +530,14 @@ const Home = () => {
 
           <div className="max-w-3xl mx-auto text-center space-y-8 relative">
             <p className="text-xs font-semibold text-[#5eead4] uppercase tracking-wider">
-              Take it slow
+              {t('home.ctaTakeItSlow')}
             </p>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05]">
-              Your health, on{' '}
-              <span className="text-[#5eead4]">your terms.</span>
+              {t('home.ctaYourHealth')}{' '}
+              <span className="text-[#5eead4]">{t('home.ctaYourTerms')}</span>
             </h2>
             <p className="text-lg text-white/70 max-w-xl mx-auto leading-relaxed">
-              No fear-mongering, no upsells, no data harvesting. Just the calmest way we know to help
-              you make a small decision about your body.
+              {t('home.ctaDescription')}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link to={user ? '/symptoms' : '/register'}>
@@ -550,7 +546,7 @@ const Home = () => {
                   style={{ backgroundColor: 'white', color: '#0f1f2e' }}
                   className="min-w-[210px] hover:opacity-90"
                 >
-                  {user ? 'Open Cura' : 'Get started — free'}
+                  {user ? t('home.ctaOpenCura') : t('home.ctaGetStartedFree')}
                   <ArrowRight size={16} />
                 </Button>
               </Link>
@@ -561,7 +557,7 @@ const Home = () => {
                     variant="ghost"
                     className="text-white border-white/20 hover:bg-white/10 hover:text-white min-w-[210px]"
                   >
-                    I have an account
+                    {t('home.ctaHaveAccount')}
                   </Button>
                 </Link>
               )}

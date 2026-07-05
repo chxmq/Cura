@@ -69,9 +69,9 @@ const CareNearMe = () => {
       setLoadedTabs((prev) => ({ ...prev, [tab]: true }));
     } catch (err) {
       if (err.code === 'ERR_NETWORK' || err.message?.includes('ERR_CONNECTION_REFUSED')) {
-        setError('Can\'t reach the server. Make sure the backend is running on port 5050.');
+        setError(t('care.serverError'));
       } else {
-        setError(err.response?.data?.error || 'Couldn\'t load nearby care right now.');
+        setError(err.response?.data?.error || t('care.networkError'));
       }
     } finally {
       setLoading(false);
@@ -116,11 +116,11 @@ const CareNearMe = () => {
         {/* Sidebar */}
         <div className="lg:col-span-1 space-y-4">
           <Card>
-            <h3 className="text-sm font-semibold text-[#0f1f2e]">Your location</h3>
+            <h3 className="text-sm font-semibold text-[#0f1f2e]">{t('care.yourLocation')}</h3>
             <p className="text-xs text-[#7b8593] mt-1 font-mono">
               {userLocation
                 ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`
-                : 'Locating…'}
+                : t('care.locating')}
             </p>
             <Button
               variant="ghost"
@@ -129,7 +129,7 @@ const CareNearMe = () => {
               onClick={getUserLocation}
               disabled={loading}
             >
-              <Crosshair size={14} /> Re-locate
+              <Crosshair size={14} /> {t('care.relocate')}
             </Button>
           </Card>
 
@@ -162,7 +162,7 @@ const CareNearMe = () => {
           {loading ? (
             <Card className="p-16 flex flex-col items-center justify-center min-h-[400px]">
               <LoadingSpinner size="lg" />
-              <p className="mt-6 text-sm text-[#7b8593]">Looking around…</p>
+              <p className="mt-6 text-sm text-[#7b8593]">{t('care.lookingAround')}</p>
             </Card>
           ) : list.length > 0 ? (
             <div className="grid md:grid-cols-2 gap-4 animate-slide-up">
@@ -194,7 +194,7 @@ const CareNearMe = () => {
                     )}
                     {place.open24Hours && (
                       <span className="inline-flex items-center px-2.5 py-1 bg-[#dcfce7] text-[#166534] rounded-full font-medium">
-                        Open 24h
+                        {t('care.open24h')}
                       </span>
                     )}
                     {place.specialties?.slice(0, 2).map((s, i) => (
@@ -212,7 +212,7 @@ const CareNearMe = () => {
                     className="w-full mt-auto"
                     size="sm"
                   >
-                    Get directions
+                    {t('care.getDirections')}
                   </Button>
                 </Card>
               ))}
@@ -221,13 +221,13 @@ const CareNearMe = () => {
             <Card className="p-16 text-center">
               <Search size={40} className="mx-auto text-[#d4cfbf]" />
               <h3 className="mt-4 font-display text-xl font-semibold text-[#0f1f2e]">
-                Nothing found around you
+                {t('care.nothingFound')}
               </h3>
               <p className="mt-2 text-sm text-[#7b8593]">
-                Try re-locating or moving to a different area.
+                {t('care.nothingFoundHint')}
               </p>
               <Button variant="secondary" className="mt-6" onClick={() => fetchData(activeTab, { force: true })}>
-                Try again
+                {t('care.tryAgain')}
               </Button>
             </Card>
           )}

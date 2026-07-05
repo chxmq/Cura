@@ -76,7 +76,7 @@ const Register = () => {
             <Input
               label={t('auth.fullName')}
               type="text"
-              placeholder="Jane Doe"
+              placeholder={t('auth.namePlaceholder')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -85,7 +85,7 @@ const Register = () => {
             <Input
               label={t('auth.email')}
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -95,7 +95,7 @@ const Register = () => {
               <Input
                 label={t('auth.password')}
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 minLength={6}
@@ -106,7 +106,7 @@ const Register = () => {
               <Input
                 label={t('auth.confirmPassword')}
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
